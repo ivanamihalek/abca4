@@ -12,6 +12,7 @@ CREATE TABLE `cases` (
   `allele2_protein`   varchar(50),
   `pubmed`    int,
   `patient_id` varchar(50),
+  `onset_age` int,
   `acuity_type` varchar(50),
   `eye` ENUM('better', 'average', 'both'),
   `progression` text,
