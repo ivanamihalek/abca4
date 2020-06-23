@@ -40,6 +40,9 @@ def protein_cleanup(protein, cdna):
 	if not protein or len(protein.replace(" ",""))==0:
 		if not cdna or len(cdna.replace(" ",""))==0:return ""
 		return protein_from_cdna(cdna)
+	else:
+		# check that protein and cdna mutations match
+		pass
 	protein = re.sub('[\[\]\(\)\s]', '', protein)
 	for long, short in single_letter_code.items():
 		protein = protein.replace(long, short)
