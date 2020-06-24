@@ -9,12 +9,9 @@
 # 2 positions to the right(?) whichever imbecile came up with that
 
 import os
-import re
 import subprocess
 
 from utils.mysql import *
-from utils.utils import single_letter_code
-from sys import argv
 from Bio.Seq  import Seq
 from Bio.Alphabet import generic_dna, generic_protein
 import pprint
@@ -89,7 +86,7 @@ def get_canonical_exon_bdries(cursor, ensembl_gene_id):
 #########################################
 def get_cdna(cursor, blastdbcmd, cdna_fasta, seq_region_id, strand,  exons):
 
-	splice_length = 5 # how many places should I put there
+	splice_length = 12 # how many places should I put there? is this meaningful
 
 	qry =  f"select name from seq_region where seq_region_id={seq_region_id}"
 	seq_region_name = hard_landing_search(cursor, qry)[0][0]
@@ -119,14 +116,19 @@ def get_cdna(cursor, blastdbcmd, cdna_fasta, seq_region_id, strand,  exons):
 
 	acceptor_splice = {}
 	donor_splice = {}
+	cdna2gdna = {}
 	cumulative_length = 0
 	exon_boundary = 0
 	total_length = len(seq)
+
 	for exon in exons:
 		acceptor_splice[exon_boundary+1] = exon.acceptor_splice
+		cdna2gdna[exon_boundary+1] = exon.start
 		cumulative_length += exon.end-exon.start+1
 		exon_boundary  = total_length - cumulative_length if reverse else cumulative_length
 		donor_splice[exon_boundary] = exon.donor_splice
+		cdna2gdna[exon_boundary] = exon.end
+
 	print(cumulative_length, cumulative_length%3, cumulative_length/3)
 	biopython_dna = Seq(seq, generic_dna)
 	if reverse: biopython_dna = biopython_dna.reverse_complement()
@@ -139,45 +141,52 @@ def get_cdna(cursor, blastdbcmd, cdna_fasta, seq_region_id, strand,  exons):
 	# for i in range(len(protein)):
 	# 	print(i, protein[i], codon[i])
 	# exit()
-	return cdna, protein, acceptor_splice, donor_splice
+	return seq_region_name, cdna, protein, acceptor_splice, donor_splice, cdna2gdna
 
 
 output_format = '''
-cdna = \'\'\'
+
+abca4_chromosome = "{}"
+
+abca4_cdna = \'\'\'
 {}
 \'\'\'
 
-protein =  \'\'\'
+abca4_protein =  \'\'\'
 {}
 \'\'\'
 
-acceptor_splice = {}
+abca4_donor_splice = {}
 
-donor_splice = {}
+abca4_acceptor_splice = {}
+
+abca4_cdna2gdna = {}
 
 def get_cdna():
-	return cdna.replace("\\n", "")
+	return abca4_cdna.replace("\\n", "")
 	
 def get_protein():
-	return protein.replace("\\n", "")
+	return abca4_protein.replace("\\n", "")
 	
 def get_codons():
-	return [cdna[i:i+3] for i in range(0,len(cdna),3)]
+	return [abca4_cdna[i:i+3] for i in range(0,len(abca4_cdna),3)]
 	
-def get_backward_numbered_splice_acceptor(bdry_pos):
-	cumulative_length = max(acceptor_splice.keys())
-	return acceptor_splice.get(cumulative_length-bdry_pos, None)
+def get_backward_numbered_acceptor_splice(bdry_pos):
+	cumulative_length = max(abca4_acceptor_splice.keys())
+	return abca4_acceptor_splice.get(cumulative_length-bdry_pos, None)
 	
-def get_backward_numbered_splice_donor(bdry_pos):
-	cumulative_length = max(donor_splice.keys())
-	return donor_splice.get(cumulative_length-bdry_pos, None)
-
-
+def get_backward_numbered_donor_splice(bdry_pos):
+	cumulative_length = max(abca4_donor_splice.keys())
+	return abca4_donor_splice.get(cumulative_length-bdry_pos, None)
 
 '''
 
 ########################################
 def main():
+
+	print("careful, this will rewrite  utils/abca4_gene.py")
+	exit()
+
 	gene = "ABCA4"
 
 	blastdbcmd = "/usr/bin/blastdbcmd"
@@ -202,12 +211,14 @@ def main():
 	[seq_region_id, strand, exons] = get_canonical_exon_bdries(cursor, ensembl_gene_id)
 
 	# canonical cdna and its translation
-	[cdna, protein, acceptor_splice, donor_splice] = get_cdna(cursor, blastdbcmd, cdna_fasta, seq_region_id, strand, exons)
+	[seq_region_name, cdna, protein, acceptor_splice, donor_splice, cdna2gdna] =\
+		get_cdna(cursor, blastdbcmd, cdna_fasta, seq_region_id, strand, exons)
 	pp = pprint.PrettyPrinter(indent=4)
 	with open(f"{utils_dir}/{gene.lower()}_gene.py", "w") as outf:
 		newlined_cdna = "\n".join([cdna[i:i+100] for i in range(0,len(cdna),100)])
 		newlined_protein = "\n".join([protein[i:i+100] for i in range(0,len(protein),100)])
-		outf.write(output_format.format(newlined_cdna, newlined_protein, pp.pformat(acceptor_splice), pp.pformat(donor_splice)))
+		outf.write(output_format.format(seq_region_name, newlined_cdna, newlined_protein, pp.pformat(donor_splice),
+										pp.pformat(acceptor_splice),  pp.pformat(cdna2gdna)))
 
 	cursor.close()
 	db.close()

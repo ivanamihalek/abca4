@@ -4,8 +4,10 @@ import os
 import re
 
 from utils.mysql import *
-from utils.utils import single_letter_code
+from utils.annotation import *
 from sys import argv
+
+from utils.abca4_gene import *
 
 # really bad
 # finger counting, hand waving, light perception
@@ -23,31 +25,50 @@ def normalize(value_type, acuity):
 
 	elif value_type.lower()=="logmar":
 		try:
-			print(acuity, pow(10, -float(acuity)))
+			# print(acuity, pow(10, -float(acuity)))
 			return pow(10, -float(acuity))
 		except:
 			return 0.0
 	return 0.0
 
 
-def cdna_cleanup(cdna):
-	if not cdna: return ""
-	cdna = re.sub('[\[\]\(\)\s]', '', cdna)
-	return cdna.replace("c.", "").replace(";", "; ")
+def cdna_cleanup(cdna_variant):
+	if not cdna_variant: return []
+	cdna_variant = re.sub('[\[\]\(\)\s]', '', cdna_variant).replace("c.", "").split(";")
+	return list(filter(lambda x: x!=None and x!="", cdna_variant))
 
 
-def protein_cleanup(protein, cdna):
-	if not protein or len(protein.replace(" ",""))==0:
-		if not cdna or len(cdna.replace(" ",""))==0:return ""
-		return protein_from_cdna(cdna)
-	else:
-		# check that protein and cdna mutations match
-		pass
-	protein = re.sub('[\[\]\(\)\s]', '', protein)
-	for long, short in single_letter_code.items():
-		protein = protein.replace(long, short)
-		protein = protein.replace(long.capitalize(), short)
-	return protein.replace("p.", "").replace(";", "; ")
+def protein_cleanup(protein_allele_string, cdna_allele):
+
+	protein_allele = re.sub('[\[\]\(\)\s]', '', protein_allele_string).replace("p.", "").split(";")
+	protein_allele = list(filter(lambda x: x!=None and x!="", protein_allele))
+
+	lp = len(protein_allele)
+	lc = len(cdna_allele)
+
+	if lp>0 and lc>0:
+		if  lp!=lc:
+			print(f"differing number of variants in cDNA and protein description: {protein_allele} {cdna_allele}")
+			exit()
+
+		for i in range(len(cdna_allele)):
+			cdna_variant    = cdna_allele[i]
+			protein_variant = protein_allele[i]
+			if not protein_variant or len(protein_variant.replace(" ", ""))==0:
+				if not cdna_variant or len(cdna_variant.replace(" ", ""))==0:return ""
+				return "" #protein_from_cdna(cdna)
+			else:
+				# check that protein and cdna mutations match
+				print(cdna_variant, protein_variant)
+				mutation_effect(get_cdna(), cdna_variant)
+
+	# for protein_variant in
+	# protein_variant = re.sub('[\[\]\(\)\s]', '', protein_variant)
+	# for long, short in single_letter_code.items():
+	# 	protein_variant = protein_variant.replace(long, short)
+	# 	protein_variant = protein_variant.replace(long.capitalize(), short)
+	#return protein_variant.replace("p.", "").replace(";", "; ")
+	return []
 
 
 def parse_in(in_tsv):
@@ -84,13 +105,16 @@ def parse_in(in_tsv):
 		except:
 			onset = -1
 
-		cdna1 = cdna_cleanup(cdna1)
-		cdna2 = cdna_cleanup(cdna2)
-		protein1 = protein_cleanup(protein1,cdna1)
-		protein2 = protein_cleanup(protein2,cdna2)
+		cdna_allele_1 = cdna_cleanup(cdna1)
+		cdna_allele_2 = cdna_cleanup(cdna2)
+		protein_allele_1 = protein_cleanup(protein1,cdna_allele_1)
+		protein_allele_2 = protein_cleanup(protein2,cdna_allele_2)
 
-		cases[f"{pmid} {patient_id}"] = [cdna1, protein1, cdna2, protein2, value_type, onset, ";".join(acuity_age)]
+		cases[f"{pmid} {patient_id}"] = [";".join(cdna_allele_1), ";".join(protein_allele_1),
+										";".join(cdna_allele_2), ";".join(protein_allele_2),
+										value_type, onset, ";".join(acuity_age)]
 	inf.close()
+
 	return cases
 
 #########################################
@@ -109,8 +133,8 @@ def main():
 		exit()
 
 	cases = parse_in(in_tsv)
-	for case, data in cases.items():
-		print(case, data)
+	# for case, data in cases.items():
+	# 	print(case, data)
 
 	db,cursor = abca4_connect()
 
