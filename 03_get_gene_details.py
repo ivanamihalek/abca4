@@ -125,7 +125,9 @@ def get_cdna(cursor, blastdbcmd, cdna_fasta, seq_region_id, strand,  exons):
 		acceptor_splice[exon_boundary+1] = exon.acceptor_splice
 		cdna2gdna[exon_boundary+1] = exon.start
 		cumulative_length += exon.end-exon.start+1
+
 		exon_boundary  = total_length - cumulative_length if reverse else cumulative_length
+
 		donor_splice[exon_boundary] = exon.donor_splice
 		cdna2gdna[exon_boundary] = exon.end
 

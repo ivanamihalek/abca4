@@ -11,6 +11,8 @@ from Bio import BiopythonWarning
 import warnings
 warnings.simplefilter('ignore', BiopythonWarning)
 
+from utils.abca4_gene import  *
+
 single_letter_code = {'GLY':'G', 'ALA':'A',  'VAL':'V', 'LEU':'L', 'ILE':'I',
 		 'MET': 'M', 'PRO': 'P',  'TRP': 'W', 'PHE':'F', 'SER':'S',
 		 'CYS': 'C', 'THR': 'T',  'ASN': 'N', 'GLN':'Q', 'TYR':'Y',
@@ -135,10 +137,6 @@ def deletion(seq, cdna_variant, original_protein):
 	return protein_effect
 
 
-def splice_site(seq, cdna_variant, original_protein):
-	return ""
-
-
 def point_mutation(seq, cdna_variant, original_protein):
 	return ""
 	variant_parse = re.match(r'(\d+)([ACTG])>([ACTG])', cdna_variant)
@@ -158,9 +156,67 @@ def point_mutation(seq, cdna_variant, original_protein):
 	return protein_effect
 
 
-def mutation_effect(seq, cdna_variant):
+###################################
+def splice_site(cdna_variant):
+	print("\n ====> ", cdna_variant)
+	# parse the variant
+	variant_parse = re.match(r'(\d+)([\-+−])(\d+)([ACTG])>([ACTG])', cdna_variant)
+	exon_bdry = int(variant_parse.group(1))
+	direction = variant_parse.group(2)
+	pos       = int(variant_parse.group(3))
+	nt_from   = variant_parse.group(4)
+	nt_to     = variant_parse.group(5)
+	pos -= 1  # 0-offset
+
+	print(" ====> ", cdna_variant, exon_bdry, direction, pos, nt_from, nt_to)
+	ss_length = len(list(abca4_acceptor_splice.values())[0]) # they should all be the same length
+	if direction in "-−":
+		splice = abca4_acceptor_splice
+		pos = ss_length-pos
+	else:
+		splice = abca4_donor_splice
+
+	# if the variant is further away than the sequence we have stored return "deep intronic"
+	if pos<0 or pos>=ss_length:
+		effect = "deepintr"
+		print("      ================>", effect)
+	else:
+		splice_seq = splice.get(exon_bdry, "not found")
+		if splice_seq=="not found":
+			# if exon_bdry not found see if we are counting the exons backwards
+			print("      ================> exond bdry not found")
+			if direction in "-−":
+				splice_seq = get_backward_numbered_acceptor_splice(exon_bdry)
+			else:
+				splice_seq = get_backward_numbered_donor_splice(pos)
+			print("      ================> reversnumbergin of exons", splice_seq)
+			print(splice_seq,  splice_seq[pos] )
+			if splice_seq[pos] != nt_from:
+				# if there is nucleotdie mismatch, see if we are counting the exons backwards
+				print("      ============================> nt mismatch")
+
+		else:
+			print(splice_seq,  splice_seq[pos] )
+			if splice_seq[pos] != nt_from:
+				# if there is nucleotdie mismatch, see if we are counting the exons backwards
+				print("      ================> nt mismatch")
+	return ""
+
+
+def mutation_effect(cdna_variant):
 
 	cdna_variant = cdna_variant.replace(" ", "")
+
+	if re.findall(r'[\-+−]', cdna_variant):
+		if "del" in cdna_variant:
+			return ""
+		if "IVS" in cdna_variant:
+			return ""
+		else:
+			return splice_site(cdna_variant)
+
+	# everything else except splice site
+	seq = get_cdna()
 	original_protein = str(Seq(seq).translate())
 
 	if "indel" in cdna_variant or "delins" in cdna_variant:
@@ -173,10 +229,7 @@ def mutation_effect(seq, cdna_variant):
 		return insert(seq, cdna_variant, original_protein)
 
 	if ">" in cdna_variant:
-		if "+" in cdna_variant or "-" in cdna_variant  or "−" in cdna_variant:
-			return splice_site(seq, cdna_variant, original_protein)
-		else:
-			return point_mutation(seq, cdna_variant, original_protein)
+		return point_mutation(seq, cdna_variant, original_protein)
 
 	return ""
 

@@ -7,7 +7,7 @@ from utils.mysql import *
 from utils.annotation import *
 from sys import argv
 
-from utils.abca4_gene import *
+
 
 # really bad
 # finger counting, hand waving, light perception
@@ -46,21 +46,18 @@ def protein_cleanup(protein_allele_string, cdna_allele):
 	lp = len(protein_allele)
 	lc = len(cdna_allele)
 
-	if lp>0 and lc>0:
-		if  lp!=lc:
-			print(f"differing number of variants in cDNA and protein description: {protein_allele} {cdna_allele}")
-			exit()
+	if lp==0 and lc==0: return []
 
-		for i in range(len(cdna_allele)):
-			cdna_variant    = cdna_allele[i]
-			protein_variant = protein_allele[i]
-			if not protein_variant or len(protein_variant.replace(" ", ""))==0:
-				if not cdna_variant or len(cdna_variant.replace(" ", ""))==0:return ""
-				return "" #protein_from_cdna(cdna)
-			else:
-				# check that protein and cdna mutations match
-				print(cdna_variant, protein_variant)
-				mutation_effect(get_cdna(), cdna_variant)
+	if lp>0 and lc>0 and lp!=lc:
+		print(f"differing number of variants in cDNA and protein description: {protein_allele} {cdna_allele}")
+		exit()
+
+	for i in range(len(cdna_allele)):
+		cdna_variant    = cdna_allele[i]
+		if lp>0: protein_variant = protein_allele[i]
+		# check that protein and cdna mutations match
+		# print(cdna_variant, protein_variant)
+		mutation_effect(cdna_variant)
 
 	# for protein_variant in
 	# protein_variant = re.sub('[\[\]\(\)\s]', '', protein_variant)
