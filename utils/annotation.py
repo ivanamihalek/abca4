@@ -20,10 +20,14 @@ single_letter_code = {'GLY':'G', 'ALA':'A',  'VAL':'V', 'LEU':'L', 'ILE':'I',
 		 'PTR':'Y', 'TER':'*'}
 
 three_letter_code = dict([(single_letter_code[k],k.capitalize()) for k in single_letter_code.keys()])
+# note that we have 3 different glyphs in use for the minus character
+sign_regex = r'[\-+−–]'
+minus_character = "-−–"
 
+# TODO IVS
 
-def indel(seq, cdna_variant, original_protein):
-	return
+def indel(seq, cdna_variant, original_protein, verbose=False):
+	# return
 	# trying to accomodate various non-standard ways of writing down the variant
 	if "indel" in cdna_variant:
 		field = cdna_variant.split("indel")
@@ -63,12 +67,12 @@ def indel(seq, cdna_variant, original_protein):
 				fs_end = i
 				break
 		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
-	print(">>>>>>>>>>>>>>>>", position, inserted_nt, protein_effect)
+	if verbose: print(">>>>>>>>>>>>>>>>", position, inserted_nt, protein_effect)
 	return protein_effect
 
 
-def insert(seq, cdna_variant, original_protein):
-	return
+def insert(seq, cdna_variant, original_protein, verbose=False):
+	# return
 	# trying to accomodate various non-standard ways of writing down the variant
 	field = cdna_variant.split("ins")
 	if "_" in cdna_variant:
@@ -99,16 +103,18 @@ def insert(seq, cdna_variant, original_protein):
 				fs_end = i
 				break
 		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
-	print(">>>>>>>>>>>>>>>>", protein_effect)
+	if verbose: print(">>>>>>>>>>>>>>>>", protein_effect)
 	return protein_effect
 
 
-def deletion(seq, cdna_variant, original_protein):
-	return
+def deletion(seq, cdna_variant, original_protein, verbose=False):
+	#return
 	# trying to accomodate various non-standard ways of writing down the variant
 	if "_" in cdna_variant:
 		# example 4663_4664del
-		position = [int(i) - 1 for i in cdna_variant.replace("del", "").split("_")]
+		# however, can also have 850_857delATTCAAGA
+		if verbose: print(cdna_variant)
+		position = [int(i) - 1 for i in cdna_variant.split("del")[0].split("_")]
 	else:
 		# I've seen 4739del, but also 4739delT for the same thing
 		position  = [int(cdna_variant.split("del")[0]) - 1]
@@ -133,20 +139,24 @@ def deletion(seq, cdna_variant, original_protein):
 				fs_end = i
 				break
 		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
-	print(">>>>>>>>>>>>>>>>", protein_effect)
+	if verbose: print(">>>>>>>>>>>>>>>>", protein_effect)
 	return protein_effect
 
 
-def point_mutation(seq, cdna_variant, original_protein):
-	return ""
+def point_mutation(seq, cdna_variant, original_protein, verbose=False):
+	#return ""
+	if not cdna_variant: return ""
 	variant_parse = re.match(r'(\d+)([ACTG])>([ACTG])', cdna_variant)
+	if not variant_parse:
+		if verbose: print(cdna_variant)
+		exit()
 	pos = int(variant_parse.group(1))
 	nt_from = variant_parse.group(2)
 	nt_to = variant_parse.group(3)
 	pos -= 1  # 0-offset
 	# sanity
 	if seq[pos]!=nt_from:
-		print(f"seq mismatch in from: {nt_from} should be {seq[pos]}")
+		if verbose: print(f"seq mismatch in from: {nt_from} should be {seq[pos]}")
 	protein_pos = floor(pos/3)
 	biopython_dna = MutableSeq(seq)
 	biopython_dna[pos] = nt_to
@@ -157,10 +167,10 @@ def point_mutation(seq, cdna_variant, original_protein):
 
 
 ###################################
-def splice_site(cdna_variant):
-	print("\n ====> ", cdna_variant)
+def splice_site(cdna_variant, verbose=False):
+	if verbose: print("\n ====> ", cdna_variant)
 	# parse the variant
-	variant_parse = re.match(r'(\d+)([\-+−])(\d+)([ACTG])>([ACTG])', cdna_variant)
+	variant_parse = re.match(r'(\d+)([\-+−–])(\d+)([ACTG])>([ACTG])', cdna_variant)
 	exon_bdry = int(variant_parse.group(1))
 	direction = variant_parse.group(2)
 	pos       = int(variant_parse.group(3))
@@ -168,46 +178,71 @@ def splice_site(cdna_variant):
 	nt_to     = variant_parse.group(5)
 	pos -= 1  # 0-offset
 
-	print(" ====> ", cdna_variant, exon_bdry, direction, pos, nt_from, nt_to)
+	if verbose: print(" ====> ", cdna_variant, exon_bdry, direction, pos, nt_from, nt_to)
 	ss_length = len(list(abca4_acceptor_splice.values())[0]) # they should all be the same length
-	if direction in "-−":
+	if direction in minus_character:
 		splice = abca4_acceptor_splice
 		pos = ss_length-pos
 	else:
 		splice = abca4_donor_splice
 
+	effect = "(checks)"
 	# if the variant is further away than the sequence we have stored return "deep intronic"
 	if pos<0 or pos>=ss_length:
-		effect = "deepintr"
-		print("      ================>", effect)
+		effect = "corrected: deep intronic"
+		if verbose: print("      ================>", effect)
 	else:
 		splice_seq = splice.get(exon_bdry, "not found")
 		if splice_seq=="not found":
 			# if exon_bdry not found see if we are counting the exons backwards
-			print("      ================> exond bdry not found")
-			if direction in "-−":
+			if verbose: print("      ================> exond bdry not found - try reverse numbering of exons")
+			if direction in minus_character:
 				splice_seq = get_backward_numbered_acceptor_splice(exon_bdry)
 			else:
 				splice_seq = get_backward_numbered_donor_splice(pos)
-			print("      ================> reversnumbergin of exons", splice_seq)
-			print(splice_seq,  splice_seq[pos] )
-			if splice_seq[pos] != nt_from:
+			if splice_seq[pos] == nt_from:
+				if verbose: print("      ====> the reverse numbering of exons seems to work")
+				if verbose: print(splice_seq,  splice_seq[pos])
+				# TODO: what shoudl be the actual splice number here
+				effect = "corrected: "
+			else:
 				# if there is nucleotdie mismatch, see if we are counting the exons backwards
-				print("      ============================> nt mismatch")
-
+				if verbose: print("      ============================>", splice_seq,  splice_seq[pos])
+				if verbose: print("      ============================> nt mismatch - try reverse complement of the sequence")
+				splice_seq = str(Seq(splice_seq).reverse_complement())
+				if splice_seq[pos] == nt_from:
+					if verbose: print("      ============> reverse complement seems to work")
+					if verbose: print(splice_seq,  splice_seq[pos])
+					# TODO: what shoudl be the actual  variant here
+					effect = "corrected: "
+				else:
+					if verbose: print("      ============> reverse complement of the sequence did not work either")
+					effect = "not reproducible"
 		else:
-			print(splice_seq,  splice_seq[pos] )
-			if splice_seq[pos] != nt_from:
+			if splice_seq[pos] == nt_from:
+				if verbose: print(splice_seq,  splice_seq[pos])
+			else:
 				# if there is nucleotdie mismatch, see if we are counting the exons backwards
-				print("      ================> nt mismatch")
-	return ""
+				if verbose: print("      ============================>", splice_seq,  splice_seq[pos])
+				if verbose: print("      ============================> nt mismatch - try reverse complement of the sequence")
+				splice_seq = str(Seq(splice_seq).reverse_complement())
+				if splice_seq[pos] == nt_from:
+					if verbose: print("      ============> reverse complement seems to work")
+					if verbose: print(splice_seq,  splice_seq[pos])
+					# TODO: what shoudl be the actual  variant here
+					effect = "corrected: "
+				else:
+					if verbose: print("      ============> reverse complement of the sequence did not work either")
+					effect = "not reproducible"
+
+	return effect
 
 
 def mutation_effect(cdna_variant):
 
 	cdna_variant = cdna_variant.replace(" ", "")
-
-	if re.findall(r'[\-+−]', cdna_variant):
+	# note we have 3 different glyphs in use for the minus character (see def for sign_regex on the top of the file)
+	if re.findall(sign_regex, cdna_variant):
 		if "del" in cdna_variant:
 			return ""
 		if "IVS" in cdna_variant:

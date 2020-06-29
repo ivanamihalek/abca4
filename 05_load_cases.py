@@ -52,19 +52,23 @@ def protein_cleanup(protein_allele_string, cdna_allele):
 		print(f"differing number of variants in cDNA and protein description: {protein_allele} {cdna_allele}")
 		exit()
 
-	for i in range(len(cdna_allele)):
-		cdna_variant    = cdna_allele[i]
-		if lp>0: protein_variant = protein_allele[i]
-		# check that protein and cdna mutations match
-		# print(cdna_variant, protein_variant)
-		mutation_effect(cdna_variant)
+	if lp==0:
+		for i in range(len(cdna_allele)):
+			cdna_variant    = cdna_allele[i]
+			protein_variant = mutation_effect(cdna_variant)
+			print("%20s  %20s (inferred)"%(cdna_variant, protein_variant))
+	elif lc==0:
+		for i in range(len(protein_allele)):
+			cdna_variant = "(not given)"
+			protein_variant = protein_allele[i]
+			print("%20s  %20s"%(cdna_variant, protein_variant))
+	else:
+		# TODO: check whehter the provided and the iferred protein variant match
+		for i in range(len(cdna_allele)):
+			cdna_variant    = cdna_allele[i]
+			protein_variant = protein_allele[i]
+			print("%20s  %20s  %20s"%(cdna_variant, protein_variant, mutation_effect(cdna_variant)))
 
-	# for protein_variant in
-	# protein_variant = re.sub('[\[\]\(\)\s]', '', protein_variant)
-	# for long, short in single_letter_code.items():
-	# 	protein_variant = protein_variant.replace(long, short)
-	# 	protein_variant = protein_variant.replace(long.capitalize(), short)
-	#return protein_variant.replace("p.", "").replace(";", "; ")
 	return []
 
 
