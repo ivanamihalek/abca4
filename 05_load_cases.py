@@ -37,10 +37,24 @@ def cdna_cleanup(cdna_variant):
 	cdna_variant = re.sub('[\[\]\(\)\s]', '', cdna_variant).replace("c.", "").split(";")
 	return list(filter(lambda x: x!=None and x!="", cdna_variant))
 
+def compare_protein_variants(p1,p2):
+	if p1==p2: return "check ok"
+	# the fs without specifying where the Ter is doenstream is considered and acceptable shorthand
+	if "fs" in p1 and "fs" in p2:
+		if p1.split("fs")[0] == p2.split("fs")[0]: return "check ok"
+	# do we have short/long aa symbol difference?
+	if len(p1)-len(p2)==4:
+		if p1 == (three_letter_code.get(p2[0],"") + p2[1:-1] + three_letter_code.get(p2[-1],"")): return "check ok"
+	if len(p2)-len(p1)==4:
+		if p2 == (three_letter_code.get(p1[0],"") + p1[1:-1] + three_letter_code.get(p1[-1],"")): return "check ok"
+
+
+	return "<===== mismatch"
+
 
 def protein_cleanup(protein_allele_string, cdna_allele):
 
-	protein_allele = re.sub('[\[\]\(\)\s]', '', protein_allele_string).replace("p.", "").split(";")
+	protein_allele = re.sub('[\[\]\(\)\s]', '', protein_allele_string).replace("p.", "").replace("*", "Ter").split(";")
 	protein_allele = list(filter(lambda x: x!=None and x!="", protein_allele))
 
 	lp = len(protein_allele)
@@ -56,18 +70,23 @@ def protein_cleanup(protein_allele_string, cdna_allele):
 		for i in range(len(cdna_allele)):
 			cdna_variant    = cdna_allele[i]
 			protein_variant = mutation_effect(cdna_variant)
-			print("%20s  %20s (inferred)"%(cdna_variant, protein_variant))
+			if "splice" in protein_variant:
+				print(" %-20s  %-20s"%(cdna_variant, protein_variant))
+			else:
+				print(" %-20s  %-20s (inferred)"%(cdna_variant, protein_variant))
 	elif lc==0:
 		for i in range(len(protein_allele)):
 			cdna_variant = "(not given)"
 			protein_variant = protein_allele[i]
-			print("%20s  %20s"%(cdna_variant, protein_variant))
+			print(" %-20s  %-20s"%(cdna_variant, protein_variant))
 	else:
-		# TODO: check whehter the provided and the iferred protein variant match
+		# TODO: check whether the provided and the inferred protein variant match
 		for i in range(len(cdna_allele)):
 			cdna_variant    = cdna_allele[i]
 			protein_variant = protein_allele[i]
-			print("%20s  %20s  %20s"%(cdna_variant, protein_variant, mutation_effect(cdna_variant)))
+			protein_variant_inferred = mutation_effect(cdna_variant)
+			check = compare_protein_variants(protein_variant_inferred, protein_variant)
+			print(" %-20s  %-20s  %-20s    %s"%(cdna_variant, protein_variant, protein_variant_inferred, check))
 
 	return []
 
@@ -88,8 +107,8 @@ def parse_in(in_tsv):
 			print("length of progression not divisible by 3", pmid, ref, patient_id)
 			exit()
 
-		if hapl_tested.lower() != 'yes':
-			continue # let's stay away from those for now
+		# if hapl_tested.lower() != 'yes':
+		# 	continue # let's stay away from those for now
 
 		acuity_age = []
 		for [age, od, os] in [progression[i:i+3] for i in range(0, len(progression), 3)]:
@@ -97,10 +116,16 @@ def parse_in(in_tsv):
 				value_type_od, value_type_os = value_type.split("/")
 			else:
 				value_type_od, value_type_os = value_type, value_type
+			od = od.replace(" ","")
+			os = os.replace(" ","")
 			od = -1 if od == '' else normalize(value_type_od, od)
 			os = -1 if os == '' else normalize(value_type_os, os)
 			if os==-1 and od==-1: continue
-			acuity_age.append("%.1f:%.2f"%(float(age),max(od,os)))
+
+			if len(age.replace(' ',''))==0:
+				acuity_age.append("")
+			else:
+				acuity_age.append("%.1f:%.2f"%(float(age),max(od,os)))
 		try:
 			onset = int(onset)
 		except:
@@ -121,7 +146,7 @@ def parse_in(in_tsv):
 #########################################
 def main():
 
-	# print(protein_cleanup("Ser1736Pro"))
+	# print(mutation_effect("5044_5058del15"))
 	# exit()
 
 	if len(argv)<2:
@@ -134,6 +159,7 @@ def main():
 		exit()
 
 	cases = parse_in(in_tsv)
+	print("number of cases", len(cases))
 	# for case, data in cases.items():
 	# 	print(case, data)
 
