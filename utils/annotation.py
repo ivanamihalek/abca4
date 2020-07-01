@@ -165,7 +165,7 @@ def point_mutation(seq, cdna_variant, original_protein, verbose=False):
 	if not cdna_variant: return ""
 	variant_parse = re.match(r'(\d+)([ACTG])>([ACTG])', cdna_variant)
 	if not variant_parse:
-		if verbose: print(cdna_variant)
+		print("not parseable:", cdna_variant)
 		exit()
 	pos = int(variant_parse.group(1))
 	nt_from = variant_parse.group(2)
@@ -182,18 +182,102 @@ def point_mutation(seq, cdna_variant, original_protein, verbose=False):
 
 	return protein_effect
 
+###################################
+def splice_site_IVS(cdna_variant, verbose=False):
+	# check only that the exon boundary is recognizable
+	if verbose: print("\n ====> ", cdna_variant)
+	# parse the variant
+	variant_parse = re.match(r'IVS(\d+)([\-+−–])(\d+)([ACTG])>([ACTG])', cdna_variant)
+	if not variant_parse:
+		print("not parseable IVS:", cdna_variant)
+		exit()
+	exon_number = int(variant_parse.group(1))
+	direction = variant_parse.group(2)
+	pos       = int(variant_parse.group(3))
+	nt_from   = variant_parse.group(4)
+	nt_to     = variant_parse.group(5)
+
+	ss_length = len(list(abca4_acceptor_splice.values())[0]) # they should all be the same length
+	if direction in minus_character:
+		splice = abca4_acceptor_splice
+		pos = ss_length-pos
+	else:
+		splice = abca4_donor_splice
+		pos -= 1  # 0-offset
+		exon_number -= 1
+
+	cdna_position_of_the_intron = sorted(splice.keys())[exon_number]
+	splice_seq = splice[cdna_position_of_the_intron]
+	if splice_seq[pos] == nt_from:
+		cdna_variant = f"{cdna_position_of_the_intron}{direction}{pos+1}{nt_from}{nt_to}"
+	else:
+		cdna_variant = "splice   not reproducible"
+		if verbose:
+			print(exon_number, direction, pos, nt_from, nt_to)
+			print(cdna_position_of_the_intron)
+			print(splice_seq[:pos], splice_seq[pos], splice_seq[pos+1:])
+			print(Seq(splice_seq).reverse_complement())
+
+	return cdna_variant
+
+###################################
+def splice_site_del(cdna_variant, verbose=False):
+	# check only that the exon boundary is recognizable
+	if verbose: print("\n ====> ", cdna_variant)
+	# parse the variant
+	variant_parse = re.match(r'(\d+)([\-+−–])(\d+)_(\d+)([\-+−–])(\d+)del', cdna_variant)
+	if variant_parse:
+		exon_bdry_1  = int(variant_parse.group(1))
+		direction_1  = variant_parse.group(2)
+		pos_1        = int(variant_parse.group(3))
+		exon_bdry_2  = int(variant_parse.group(4))
+		direction_2  = variant_parse.group(5)
+		pos_2        = int(variant_parse.group(6))
+		if exon_bdry_1!=exon_bdry_2 or direction_1!=direction_2:
+			print("unexepected format for deletion in splice site:", cdna_variant)
+			exit()
+	else:
+		variant_parse = re.match(r'(\d+)([\-+−–])(\d+)del', cdna_variant)
+		if variant_parse:
+			exon_bdry_1  = int(variant_parse.group(1))
+			direction_1  = variant_parse.group(2)
+			pos_1        = int(variant_parse.group(3))
+		else:
+			print("not parseable deletion in splice site:", cdna_variant)
+			exit()
+
+	ss_length = len(list(abca4_acceptor_splice.values())[0]) # they should all be the same length
+	if direction_1 in minus_character:
+		splice = abca4_acceptor_splice
+		pos_1 = ss_length-pos_1
+	else:
+		splice = abca4_donor_splice
+
+	effect = "splice"
+	# if the variant is further away than the sequence we have stored return "deep intronic"
+	if pos_1<0 or pos_1>=ss_length:
+		effect = "splice   corrected: deep intronic"
+		if verbose: print("      ================>", effect)
+		splice_seq = splice.get(exon_bdry_1, "not found")
+		if splice_seq=="not found":
+			effect = "splice   not reproducible"
+
+	return effect
+
 
 ###################################
 def splice_site(cdna_variant, verbose=False):
 	if verbose: print("\n ====> ", cdna_variant)
 	# parse the variant
 	variant_parse = re.match(r'(\d+)([\-+−–])(\d+)([ACTG])>([ACTG])', cdna_variant)
+	if not variant_parse:
+		print("not parseable:", cdna_variant)
+		exit()
 	exon_bdry = int(variant_parse.group(1))
 	direction = variant_parse.group(2)
 	pos       = int(variant_parse.group(3))
 	nt_from   = variant_parse.group(4)
 	nt_to     = variant_parse.group(5)
-	pos -= 1  # 0-offset
 
 	if verbose: print(" ====> ", cdna_variant, exon_bdry, direction, pos, nt_from, nt_to)
 	ss_length = len(list(abca4_acceptor_splice.values())[0]) # they should all be the same length
@@ -201,6 +285,7 @@ def splice_site(cdna_variant, verbose=False):
 		splice = abca4_acceptor_splice
 		pos = ss_length-pos
 	else:
+		pos -= 1  # 0-offset
 		splice = abca4_donor_splice
 
 	effect = "splice"
@@ -212,7 +297,7 @@ def splice_site(cdna_variant, verbose=False):
 		splice_seq = splice.get(exon_bdry, "not found")
 		if splice_seq=="not found":
 			# if exon_bdry not found see if we are counting the exons backwards
-			if verbose: print("      ================> exond bdry not found - try reverse numbering of exons")
+			if verbose: print("      ================> exon bdry not found - try reverse numbering of exons")
 			if direction in minus_character:
 				splice_seq = get_backward_numbered_acceptor_splice(exon_bdry)
 			else:
@@ -261,9 +346,9 @@ def mutation_effect(cdna_variant):
 	# note we have 3 different glyphs in use for the minus character (see def for sign_regex on the top of the file)
 	if re.findall(sign_regex, cdna_variant):
 		if "del" in cdna_variant:
-			return ""
+			return splice_site_del(cdna_variant)
 		if "IVS" in cdna_variant:
-			return ""
+			return splice_site_IVS(cdna_variant)
 		else:
 			return splice_site(cdna_variant)
 
