@@ -23,7 +23,6 @@ three_letter_code = dict([(single_letter_code[k],k.capitalize()) for k in single
 sign_regex = r'[\-+−–]'
 minus_character = "-−–"
 
-# TODO IVS
 
 def indel(seq, cdna_variant, original_protein, verbose=False):
 	# return
@@ -178,7 +177,11 @@ def point_mutation(seq, cdna_variant, original_protein, verbose=False):
 	biopython_dna = MutableSeq(seq)
 	biopython_dna[pos] = nt_to
 	new_protein = str(biopython_dna.toseq().translate())
+
 	protein_effect = f"{three_letter_code[original_protein[protein_pos]]}{protein_pos+1}{three_letter_code[new_protein[protein_pos]]}"
+	# special warning: if the last G before splice is mutated, that might affect splicing
+	if pos+1 in abca4_donor_splice and nt_from=="G": protein_effect += "splice"
+
 
 	return protein_effect
 

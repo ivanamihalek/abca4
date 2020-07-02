@@ -40,23 +40,43 @@ def cdna_cleanup(cdna_variant):
 		.split(";")
 	return list(filter(lambda x: x!=None and x!="", cdna_variant))
 
+def aa_equal(a1, a2):
+	if a1==a2: return True
+	if len(a1)==1 and len(a2)==3:
+		if three_letter_code.get(a1, "none").upper()==a2.upper(): return True
+	if len(a2)==1 and len(a1)==3:
+		if three_letter_code.get(a2, "none").upper()==a1.upper(): return True
+	return False
+
 def compare_protein_variants(p1,p2):
+
 	if p1==p2: return "check ok"
-	# the fs without specifying where the Ter is doenstream is considered and acceptable shorthand
+	# the fs without specifying where the Ter is downstream is considered and acceptable shorthand
 	if "fs" in p1 and "fs" in p2:
 		if p1.split("fs")[0] == p2.split("fs")[0]: return "check ok"
+	if "splice" in p1 and "splice" in p2: return  "check ok"
+
 	# do we have short/long aa symbol difference?
-	if len(p1)-len(p2)==4:
-		if p1 == (three_letter_code.get(p2[0],"") + p2[1:-1] + three_letter_code.get(p2[-1],"")): return "check ok"
-	if len(p2)-len(p1)==4:
-		if p2 == (three_letter_code.get(p1[0],"") + p1[1:-1] + three_letter_code.get(p1[-1],"")): return "check ok"
+	pattern_1 =  re.match('(\D+)(\d+)(\D+)', p1)
+	pattern_2 =  re.match('(\D+)(\d+)(\D+)', p2)
+	if pattern_1 and pattern_2:
+		aa_from_1 = pattern_1.group(1)
+		aa_from_2 = pattern_2.group(1)
+		pos_1 = pattern_1.group(2)
+		pos_2 = pattern_2.group(2)
+		aa_to_1 = pattern_1.group(3)
+		aa_to_2 = pattern_2.group(3)
+		if pos_1==pos_2 and aa_equal(aa_from_1, aa_from_2) and aa_equal(aa_to_1, aa_to_2): return "check ok"
+
 
 	return "<===== mismatch"
 
 
 def protein_cleanup(protein_allele_string, cdna_allele, verbose=False):
 
-	protein_allele = re.sub('[\[\]\(\)\s]', '', protein_allele_string).replace("p.", "").replace("*", "Ter").split(";")
+	# the usage of * and Ter is invonsistent -
+	# one would expect * to be used in dingle letter rep, and Ter in three letter, but ut is not the case
+	protein_allele = re.sub('[\[\]\(\)\s]', '', protein_allele_string).replace("p.", "").split(";")
 	protein_allele = list(filter(lambda x: x!=None and x!="", protein_allele))
 
 	lp = len(protein_allele)
@@ -154,10 +174,39 @@ def parse_in(in_tsv, verbose=False):
 	print("line ct", linect)
 	return cases
 
+
+def last_nucleoutide_bedore_donor():
+	cdna = get_cdna()
+	count={}
+	for nt in list("ACTG"): count[nt] = 0
+	for pos in abca4_donor_splice.keys():
+		if pos<1:continue
+		print(pos, cdna[pos-1])
+		count[cdna[pos-1]] += 1
+	print(count)
+
+def first_nucleoutide_after_acceptor():
+	cdna = get_cdna()
+	count={}
+	for nt in list("ACTG"): count[nt] = 0
+	for pos in abca4_acceptor_splice.keys():
+		if pos>=len(cdna):continue
+		print(pos, cdna[pos-1])
+		count[cdna[pos-1]] += 1
+	print(count)
+
+
+
 #########################################
 def main():
 
-	# print(mutation_effect("5044_5058del15"))
+	# last_nucleoutide_bedore_donor() # this really seems to be overwhelmingly G
+	# first_nucleoutide_after_acceptor() $ this is more commonly G, but not as overwhlmingly as in the case of donor
+	# exit()
+
+	# codon = get_codons()[2029]
+	# print(codon)
+	# print(f"CGA  {Seq('CGA').translate()}   AGA {Seq('AGA').translate()}   TGA {Seq('TGA').translate()} ")
 	# exit()
 
 	if len(argv)<2:

@@ -310,7 +310,8 @@ def get_protein():
 	return abca4_protein.replace("\n", "")
 	
 def get_codons():
-	return [abca4_cdna[i:i+3] for i in range(0,len(abca4_cdna),3)]
+	cdna = get_cdna()
+	return [cdna[i:i+3] for i in range(0,len(cdna),3)]
 	
 def get_backward_numbered_acceptor_splice(bdry_pos):
 	cumulative_length = max(abca4_acceptor_splice.keys())
