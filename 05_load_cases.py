@@ -72,6 +72,25 @@ def compare_protein_variants(p1,p2):
 	return "<===== mismatch"
 
 
+def protein_variant_sanity_check(protein_variant):
+	pattern = re.match('(\D+)(\d+)(\D+)', protein_variant)
+	if not pattern: return "no pattern" # nothing much we can do here
+	aa_from = pattern.group(1)
+	if len(aa_from)==3: aa_from = single_letter_code.get(aa_from.upper(), "none")
+	pos     = pattern.group(2)
+	aa_to   = pattern.group(3)
+	if aa_to.lower() in ['dup']: return "nostandard aa" # nothing much we can do here
+	protein_sequence =  get_protein()
+	if int(pos)-1>=len(protein_sequence):
+		print(f"protein length out of range for {protein_variant}")
+		exit()
+
+	orig_aa = protein_sequence[int(pos)-1]
+	if aa_from != orig_aa:
+		print(f"type mismatch for {protein_variant} the original AA type at {pos} is {orig_aa}, here is {aa_from}")
+		exit()
+	return "check ok"
+
 def protein_cleanup(protein_allele_string, cdna_allele, verbose=False):
 
 	# the usage of * and Ter is invonsistent -
@@ -100,6 +119,7 @@ def protein_cleanup(protein_allele_string, cdna_allele, verbose=False):
 		for i in range(len(protein_allele)):
 			cdna_variant = "(not given)"
 			protein_variant = protein_allele[i]
+			protein_variant_sanity_check(protein_variant)
 			if verbose: print(" %-20s  %-20s"%(cdna_variant, protein_variant))
 	else:
 		for i in range(len(cdna_allele)):

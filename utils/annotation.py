@@ -84,7 +84,7 @@ def insert(seq, cdna_variant, original_protein, verbose=False):
 
 	insert_length = len(inserted_nt)
 	if insert_length%3==0:
-		inserted_aa = str(Seq(inserted_nt, generic_dna))
+		inserted_aa = str(Seq(inserted_nt, generic_dna).translate())
 		protein_effect = f"inserted {inserted_aa}"
 	else:
 		biopython_dna = Seq(seq[:position[0]+1]+inserted_nt+seq[position[1]:], generic_dna)
