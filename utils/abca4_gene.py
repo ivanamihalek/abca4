@@ -315,9 +315,9 @@ def get_codons():
 	
 def get_backward_numbered_acceptor_splice(bdry_pos):
 	cumulative_length = max(abca4_acceptor_splice.keys())
-	return abca4_acceptor_splice.get(cumulative_length-bdry_pos, None)
+	return cumulative_length-bdry_pos, abca4_acceptor_splice.get(cumulative_length-bdry_pos, None)
 	
 def get_backward_numbered_donor_splice(bdry_pos):
 	cumulative_length = max(abca4_donor_splice.keys())
-	return abca4_donor_splice.get(cumulative_length-bdry_pos, None)
+	return cumulative_length-bdry_pos, abca4_donor_splice.get(cumulative_length-bdry_pos, None)
 

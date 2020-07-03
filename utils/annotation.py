@@ -263,7 +263,7 @@ def splice_site_del(cdna_variant, verbose=False):
 		if verbose: print("      ================>", effect)
 		splice_seq = splice.get(exon_bdry_1, "not found")
 		if splice_seq=="not found":
-			effect = "splice   not reproducible"
+			effect = "splice not reproducible"
 
 	return effect
 
@@ -294,7 +294,7 @@ def splice_site(cdna_variant, verbose=False):
 	effect = "splice"
 	# if the variant is further away than the sequence we have stored return "deep intronic"
 	if pos<0 or pos>=ss_length:
-		effect = "splice   corrected: deep intronic"
+		effect = "splice deep intronic"
 		if verbose: print("      ================>", effect)
 	else:
 		splice_seq = splice.get(exon_bdry, "not found")
@@ -302,14 +302,15 @@ def splice_site(cdna_variant, verbose=False):
 			# if exon_bdry not found see if we are counting the exons backwards
 			if verbose: print("      ================> exon bdry not found - try reverse numbering of exons")
 			if direction in minus_character:
-				splice_seq = get_backward_numbered_acceptor_splice(exon_bdry)
+				exon_bdry_corrected, splice_seq = get_backward_numbered_acceptor_splice(exon_bdry)
 			else:
-				splice_seq = get_backward_numbered_donor_splice(pos)
+				exon_bdry_corrected, splice_seq = get_backward_numbered_donor_splice(pos)
 			if splice_seq[pos] == nt_from:
 				if verbose: print("      ====> the reverse numbering of exons seems to work")
 				if verbose: print(splice_seq,  splice_seq[pos])
-				# TODO: what shoudl be the actual splice number here
-				effect = "splice   corrected: "
+				# TODO: what is the correct position number
+				effect = "splice corrected:" + f"{exon_bdry_corrected}{direction}{pos+1}{nt_from}>{nt_to}"
+				print("{cdna_variant}  {effect}")
 			else:
 				# if there is nucleotdie mismatch, see if we are counting the exons backwards
 				if verbose: print("      ============================>", splice_seq,  splice_seq[pos])
@@ -318,8 +319,9 @@ def splice_site(cdna_variant, verbose=False):
 				if splice_seq[pos] == nt_from:
 					if verbose: print("      ============> reverse complement seems to work")
 					if verbose: print(splice_seq,  splice_seq[pos])
-					# TODO: what shoudl be the actual  variant here
-					effect = "splice   corrected: "
+					# TODO:  what is the correct position number
+					effect = "splice corrected:" +  + f"{exon_bdry_corrected}{direction}{pos+1}{nt_from}>{nt_to}"
+					print("{cdna_variant}  {effect}")
 				else:
 					if verbose: print("      ============> reverse complement of the sequence did not work either")
 					effect = "not reproducible"

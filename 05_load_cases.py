@@ -8,6 +8,32 @@ from utils.annotation import *
 from sys import argv
 
 
+#########################################
+# some exploration: the sequence before
+# the donor splice site convincingly end in G in the majority of cases
+
+def last_nucleoutide_bedore_donor():
+	cdna = get_cdna()
+	count={}
+	for nt in list("ACTG"): count[nt] = 0
+	for pos in abca4_donor_splice.keys():
+		if pos<1:continue
+		print(pos, cdna[pos-1])
+		count[cdna[pos-1]] += 1
+	print(count)
+
+
+def first_nucleoutide_after_acceptor():
+	cdna = get_cdna()
+	count={}
+	for nt in list("ACTG"): count[nt] = 0
+	for pos in abca4_acceptor_splice.keys():
+		if pos>=len(cdna):continue
+		print(pos, cdna[pos-1])
+		count[cdna[pos-1]] += 1
+	print(count)
+#########################################
+
 
 # really bad
 # finger counting, hand waving, light perception
@@ -38,7 +64,11 @@ def cdna_cleanup(cdna_variant):
 		.replace("c.", "").upper()\
 		.replace("DUP","dup").replace("DEL","del").replace("INS","ins").replace("DELINS","delins")\
 		.split(";")
-	return list(filter(lambda x: x!=None and x!="", cdna_variant))
+	# sometimes people are confused about the splice numbering, in particular
+	# if the gene is encoded on - strand
+	# see if we can fix that
+	variant = [mutation_effect(cv) for cv in cdna_variant]
+	return list(filter(lambda x: x!=None and x!="", variant))
 
 def aa_equal(a1, a2):
 	if a1==a2: return True
@@ -107,20 +137,26 @@ def protein_cleanup(protein_allele_string, cdna_allele, verbose=False):
 		print(f"differing number of variants in cDNA and protein description: {protein_allele} {cdna_allele}")
 		exit()
 
+	protein_allele_clean = []
 	if lp==0:
 		for i in range(len(cdna_allele)):
 			cdna_variant    = cdna_allele[i]
 			protein_variant = mutation_effect(cdna_variant)
 			if "splice" in protein_variant:
 				if verbose: print(" %-20s  %-20s"%(cdna_variant, protein_variant))
+				protein_variant = "splice" # use as the place holder in case the allele has multiple variants
 			else:
 				if verbose: print(" %-20s  %-20s (inferred)"%(cdna_variant, protein_variant))
+			protein_allele_clean.append(protein_variant)
+
 	elif lc==0:
 		for i in range(len(protein_allele)):
 			cdna_variant = "(not given)"
 			protein_variant = protein_allele[i]
 			protein_variant_sanity_check(protein_variant)
 			if verbose: print(" %-20s  %-20s"%(cdna_variant, protein_variant))
+			protein_allele_clean.append(protein_variant)
+
 	else:
 		for i in range(len(cdna_allele)):
 			cdna_variant    = cdna_allele[i]
@@ -128,8 +164,8 @@ def protein_cleanup(protein_allele_string, cdna_allele, verbose=False):
 			protein_variant_inferred = mutation_effect(cdna_variant)
 			check = compare_protein_variants(protein_variant_inferred, protein_variant)
 			if verbose: print(" %-20s  %-20s  %-20s    %s"%(cdna_variant, protein_variant, protein_variant_inferred, check))
-
-	return []
+			protein_allele_clean.append(protein_variant_inferred)
+	return protein_allele_clean
 
 
 def parse_in(in_tsv, verbose=False):
@@ -177,7 +213,6 @@ def parse_in(in_tsv, verbose=False):
 				onset = -1
 			progression_string = ";".join(acuity_age)
 
-
 		cdna_allele_1 = cdna_cleanup(cdna1)
 		cdna_allele_2 = cdna_cleanup(cdna2)
 		protein_allele_1 = protein_cleanup(protein1,cdna_allele_1, verbose)
@@ -187,38 +222,20 @@ def parse_in(in_tsv, verbose=False):
 		if patient_key in cases:
 			print("duplicate patient key:", patient_key)
 			exit()
+		# value type is BCVA, that is why we went through the "normalization" above
 		cases[patient_key] = [";".join(cdna_allele_1), ";".join(protein_allele_1),
 										";".join(cdna_allele_2), ";".join(protein_allele_2),
-										value_type, onset, progression_string]
+										'BCVA', onset, progression_string]
 	inf.close()
 	print("line ct", linect)
 	return cases
 
 
-def last_nucleoutide_bedore_donor():
-	cdna = get_cdna()
-	count={}
-	for nt in list("ACTG"): count[nt] = 0
-	for pos in abca4_donor_splice.keys():
-		if pos<1:continue
-		print(pos, cdna[pos-1])
-		count[cdna[pos-1]] += 1
-	print(count)
-
-def first_nucleoutide_after_acceptor():
-	cdna = get_cdna()
-	count={}
-	for nt in list("ACTG"): count[nt] = 0
-	for pos in abca4_acceptor_splice.keys():
-		if pos>=len(cdna):continue
-		print(pos, cdna[pos-1])
-		count[cdna[pos-1]] += 1
-	print(count)
-
-
 
 #########################################
 def main():
+	# run this once with verbose True option to make sure you can live with all mismatches in the mutation interpretation
+	# (or delete from input if you cannot)
 
 	# last_nucleoutide_bedore_donor() # this really seems to be overwhelmingly G
 	# first_nucleoutide_after_acceptor() $ this is more commonly G, but not as overwhlmingly as in the case of donor
@@ -238,10 +255,12 @@ def main():
 		print(f"{in_tsv} not found")
 		exit()
 
-	cases = parse_in(in_tsv, verbose=True)
+	# todo: get verbose to log file
+	cases = parse_in(in_tsv, verbose=False)
 	print("number of cases", len(cases))
 	# for case, data in cases.items():
 	# 	print(case, data)
+
 
 	db,cursor = abca4_connect()
 
