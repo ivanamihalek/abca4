@@ -47,9 +47,12 @@ def indel(seq, cdna_variant, original_protein, verbose=False):
 
 
 	insert_length = len(inserted_nt)
-	if insert_length%3==0:
-		inserted_aa = str(Seq(inserted_nt, generic_dna))
-		protein_effect = f"inserted {inserted_aa}"
+	if position[0]%3==0 and (len(seq)-position[1]-1)%3==0 and insert_length%3==0:
+		inserted_aa = str(Seq(inserted_nt, generic_dna).translate())
+		delins_start_aa_type = three_letter_code[str(Seq(seq[position[0]:position[0]+3], generic_dna).translate())]
+		delins_end_aa_type   = three_letter_code[str(Seq(seq[position[1]+3:position[1]+6], generic_dna).translate())]
+		protein_effect = f"{delins_start_aa_type}{int(position[0]/3)+1}_{delins_end_aa_type}{int(position[1]/3)+2}ins{inserted_aa}"
+
 	else:
 		biopython_dna = Seq(seq[:position[0]]+inserted_nt+seq[position[1]+1:], generic_dna)
 		new_protein = str(biopython_dna.translate())
@@ -66,7 +69,7 @@ def indel(seq, cdna_variant, original_protein, verbose=False):
 				break
 		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
 	if verbose: print(">>>>>>>>>>>>>>>>", position, inserted_nt, protein_effect)
-	return protein_effect
+	return cdna_variant, protein_effect
 
 
 def insert(seq, cdna_variant, original_protein, verbose=False):
@@ -76,16 +79,18 @@ def insert(seq, cdna_variant, original_protein, verbose=False):
 	if "_" in cdna_variant:
 		# example 3211_3212insGT
 		position = [int(i) - 1 for i in field[0].split("_")]
+		if len(position)==1: position.append(position[0]+1) # some hedging here
 	else:
 		# c.3211insGT
-		position  = [int(field[0]) - 1, int(field[0]) - 1]
+		position  = [int(field[0]) - 1, int(field[0])]
 
 	inserted_nt = field[1]
 
-	insert_length = len(inserted_nt)
-	if insert_length%3==0:
+	if position[0]%3==0 and len(inserted_nt)%3==0:
 		inserted_aa = str(Seq(inserted_nt, generic_dna).translate())
-		protein_effect = f"inserted {inserted_aa}"
+		ins_start_aa_type = three_letter_code[str(Seq(seq[position[0]:position[0]+3], generic_dna).translate())]
+		ins_end_aa_type   = three_letter_code[str(Seq(seq[position[1]+3:position[1]+6], generic_dna).translate())]
+		protein_effect = f"{ins_start_aa_type}{int(position[0]/3)+1}_{ins_end_aa_type}{int(position[1]/3)+2}ins{inserted_aa}"
 	else:
 		biopython_dna = Seq(seq[:position[0]+1]+inserted_nt+seq[position[1]:], generic_dna)
 		new_protein = str(biopython_dna.translate())
@@ -102,22 +107,22 @@ def insert(seq, cdna_variant, original_protein, verbose=False):
 				break
 		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
 	if verbose: print(">>>>>>>>>>>>>>>>", protein_effect)
-	return protein_effect
+	return cdna_variant, protein_effect
 
 
 def deletion(seq, cdna_variant, original_protein, verbose=False):	#return
+	if verbose: print("processing deletion: cdna_variant", cdna_variant)
 	# trying to accomodate various non-standard ways of writing down the variant
 	if "_" in cdna_variant:
 		# example 4663_4664del
 		# however, can also have 850_857delATTCAAGA
-		if verbose: print(cdna_variant)
 		position = [int(i) - 1 for i in cdna_variant.split("del")[0].split("_")]
 	else:
 		# I've seen 4739del, but also 4739delT for the same thing
 		position  = [int(cdna_variant.split("del")[0]) - 1]
 
 	if len(position)==1: position.append(position[0])
-	deletion_length = position[1] - position[0] + 1
+
 	# did we delete a pece of protein seq without frameshift?
 	# we are in offset 0  system - if the deletion starts at position[0]==3, means there are 0, 1, and 2 left behind
 	if position[0]%3==0 and (len(seq)-position[1]-1)%3==0:
@@ -139,8 +144,8 @@ def deletion(seq, cdna_variant, original_protein, verbose=False):	#return
 				fs_end = i
 				break
 		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
-	if verbose: print(">>>>>>>>>>>>>>>>", protein_effect)
-	return protein_effect
+	if verbose: print(">>>>> ooo >>>>>>>>>", protein_effect)
+	return cdna_variant, protein_effect
 
 
 def duplication(seq, cdna_variant, original_protein, verbose=False):
@@ -158,10 +163,10 @@ def duplication(seq, cdna_variant, original_protein, verbose=False):
 	return insert(seq, cdna_variant_as_insert, original_protein, verbose)
 
 
-
 def point_mutation(seq, cdna_variant, original_protein, verbose=False):
-	#return ""
-	if not cdna_variant: return ""
+	if verbose: print("cdna_variant", cdna_variant)
+
+	if not cdna_variant: return "", ""
 	variant_parse = re.match(r'(\d+)([ACTG])>([ACTG])', cdna_variant)
 	if not variant_parse:
 		print("not parseable:", cdna_variant)
@@ -182,48 +187,53 @@ def point_mutation(seq, cdna_variant, original_protein, verbose=False):
 	# special warning: if the last G before splice is mutated, that might affect splicing
 	if pos+1 in abca4_donor_splice and nt_from=="G": protein_effect += "splice"
 
+	return cdna_variant, protein_effect
 
-	return protein_effect
 
 ###################################
 def splice_site_IVS(cdna_variant, verbose=False):
 	# check only that the exon boundary is recognizable
 	if verbose: print("\n ====> ", cdna_variant)
 	# parse the variant
-	variant_parse = re.match(r'IVS(\d+)([\-+−–])(\d+)([ACTG])>([ACTG])', cdna_variant)
+	variant_parse = re.match(r'IVS(\d+)([\-+])(\d+)([ACTG])>([ACTG])', cdna_variant)
 	if not variant_parse:
 		print("not parseable IVS:", cdna_variant)
 		exit()
 	exon_number = int(variant_parse.group(1))
 	direction = variant_parse.group(2)
-	pos       = int(variant_parse.group(3))
+	# make sure we don't have any funny dash symbols for minus
+	if direction!="+": direction="-"
+	orig_pos       = int(variant_parse.group(3))
 	nt_from   = variant_parse.group(4)
 	nt_to     = variant_parse.group(5)
 
 	ss_length = len(list(abca4_acceptor_splice.values())[0]) # they should all be the same length
-	if direction in minus_character:
+	if direction=="-":
 		splice = abca4_acceptor_splice
-		pos = ss_length-pos
+		pos = ss_length-orig_pos
 	else:
 		splice = abca4_donor_splice
-		pos -= 1  # 0-offset
+		pos = orig_pos - 1  # 0-offset
 		exon_number -= 1
 
+	protein_effect = "splice"
 	cdna_position_of_the_intron = sorted(splice.keys())[exon_number]
 	splice_seq = splice[cdna_position_of_the_intron]
 	if splice_seq[pos] == nt_from:
-		cdna_variant = f"{cdna_position_of_the_intron}{direction}{pos+1}{nt_from}{nt_to}"
+		cdna_variant = f"{cdna_position_of_the_intron}{direction}{orig_pos}{nt_from}>{nt_to}"
+		if pos<0 or pos>=ss_length:
+			protein_effect = "deep"
 	else:
-		cdna_variant = "splice   not reproducible"
-		if verbose:
-			print(exon_number, direction, pos, nt_from, nt_to)
-			print(cdna_position_of_the_intron)
-			print(splice_seq[:pos], splice_seq[pos], splice_seq[pos+1:])
-			print(Seq(splice_seq).reverse_complement())
+		cdna_variant = "splice not reproducible"
+		print(exon_number, direction, pos, nt_from, nt_to)
+		print(cdna_position_of_the_intron)
+		print(splice_seq[:pos], splice_seq[pos], splice_seq[pos+1:])
+		print(Seq(splice_seq).reverse_complement())
+		exit()
 
-	return cdna_variant
+	return cdna_variant, protein_effect
 
-###################################
+
 def splice_site_del(cdna_variant, verbose=False):
 	# check only that the exon boundary is recognizable
 	if verbose: print("\n ====> ", cdna_variant)
@@ -253,22 +263,24 @@ def splice_site_del(cdna_variant, verbose=False):
 	if direction_1 in minus_character:
 		splice = abca4_acceptor_splice
 		pos_1 = ss_length-pos_1
+		direction_1 = "-"  # get rid of funny minus characters
 	else:
 		splice = abca4_donor_splice
 
-	effect = "splice"
+	cdna_effect = cdna_variant
+	protein_effect = "splice"
 	# if the variant is further away than the sequence we have stored return "deep intronic"
 	if pos_1<0 or pos_1>=ss_length:
-		effect = "splice   corrected: deep intronic"
-		if verbose: print("      ================>", effect)
+		cdna_effect = "splice   corrected: deep intronic"
+	else:
 		splice_seq = splice.get(exon_bdry_1, "not found")
 		if splice_seq=="not found":
-			effect = "splice not reproducible"
+			cdna_effect = f"splice not reproducible {cdna_effect}"
+	if verbose: print("      ================>", cdna_effect)
 
-	return effect
+	return cdna_effect, protein_effect
 
 
-###################################
 def splice_site(cdna_variant, verbose=False):
 	if verbose: print("\n ====> ", cdna_variant)
 	# parse the variant
@@ -278,24 +290,27 @@ def splice_site(cdna_variant, verbose=False):
 		exit()
 	exon_bdry = int(variant_parse.group(1))
 	direction = variant_parse.group(2)
+	# make sure we don't have any funny dash symbols for minus
+	if direction!="+": direction="-"
 	pos       = int(variant_parse.group(3))
 	nt_from   = variant_parse.group(4)
 	nt_to     = variant_parse.group(5)
 
 	if verbose: print(" ====> ", cdna_variant, exon_bdry, direction, pos, nt_from, nt_to)
 	ss_length = len(list(abca4_acceptor_splice.values())[0]) # they should all be the same length
-	if direction in minus_character:
+	if direction == "-":
 		splice = abca4_acceptor_splice
 		pos = ss_length-pos
 	else:
 		pos -= 1  # 0-offset
 		splice = abca4_donor_splice
 
-	effect = "splice"
+	protein_effect = "splice"
+	cdna_effect = cdna_variant
 	# if the variant is further away than the sequence we have stored return "deep intronic"
 	if pos<0 or pos>=ss_length:
-		effect = "splice deep intronic"
-		if verbose: print("      ================>", effect)
+		protein_effect = "deep"
+		if verbose: print("      ================>", cdna_effect, protein_effect)
 	else:
 		splice_seq = splice.get(exon_bdry, "not found")
 		if splice_seq=="not found":
@@ -308,23 +323,23 @@ def splice_site(cdna_variant, verbose=False):
 			if splice_seq[pos] == nt_from:
 				if verbose: print("      ====> the reverse numbering of exons seems to work")
 				if verbose: print(splice_seq,  splice_seq[pos])
-				# TODO: what is the correct position number
-				effect = "splice corrected:" + f"{exon_bdry_corrected}{direction}{pos+1}{nt_from}>{nt_to}"
-				print("{cdna_variant}  {effect}")
+				pos = ss_length-pos if direction == "-" else pos + 1
+				cdna_effect = f"{exon_bdry_corrected}{direction}{pos}{nt_from}>{nt_to}"
 			else:
 				# if there is nucleotdie mismatch, see if we are counting the exons backwards
 				if verbose: print("      ============================>", splice_seq,  splice_seq[pos])
 				if verbose: print("      ============================> nt mismatch - try reverse complement of the sequence")
-				splice_seq = str(Seq(splice_seq).reverse_complement())
-				if splice_seq[pos] == nt_from:
+				rev_compl = str(Seq(splice_seq).reverse_complement())
+				if rev_compl[pos] == nt_from:
 					if verbose: print("      ============> reverse complement seems to work")
 					if verbose: print(splice_seq,  splice_seq[pos])
-					# TODO:  what is the correct position number
-					effect = "splice corrected:" +  + f"{exon_bdry_corrected}{direction}{pos+1}{nt_from}>{nt_to}"
-					print("{cdna_variant}  {effect}")
+					pos = ss_length-pos if direction == "+" else pos + 1
+					nt_from = str(Seq(nt_from).complement())
+					nt_to = str(Seq(nt_to).complement())
+					cdna_effect = f"{exon_bdry_corrected}{direction}{pos}{nt_from}>{nt_to}"
 				else:
 					if verbose: print("      ============> reverse complement of the sequence did not work either")
-					effect = "not reproducible"
+					cdna_effect = "not reproducible"
 		else:
 			if splice_seq[pos] == nt_from:
 				if verbose: print(splice_seq,  splice_seq[pos])
@@ -332,19 +347,23 @@ def splice_site(cdna_variant, verbose=False):
 				# if there is nucleotdie mismatch, see if we are counting the exons backwards
 				if verbose: print("      ============================>", splice_seq,  splice_seq[pos])
 				if verbose: print("      ============================> nt mismatch - try reverse complement of the sequence")
-				splice_seq = str(Seq(splice_seq).reverse_complement())
-				if splice_seq[pos] == nt_from:
+				rev_compl = str(Seq(splice_seq).reverse_complement())
+				if rev_compl[pos] == nt_from:
 					if verbose: print("      ============> reverse complement seems to work")
 					if verbose: print(splice_seq,  splice_seq[pos])
-					# TODO: what shoudl be the actual  variant here
-					effect = "splice   corrected: "
+					if verbose: print(splice_seq,  splice_seq[pos])
+					pos = ss_length-pos if direction == "+" else pos + 1
+					nt_from = str(Seq(nt_from).complement())
+					nt_to = str(Seq(nt_to).complement())
+					cdna_effect = f"{exon_bdry}{direction}{pos}{nt_from}>{nt_to}"
 				else:
 					if verbose: print("      ============> reverse complement of the sequence did not work either")
-					effect = "splice   not reproducible"
+					cdna_effect = "splice   not reproducible"
 
-	return effect
+	return cdna_effect, protein_effect
 
 
+###################################
 def mutation_effect(cdna_variant):
 
 	cdna_variant = cdna_variant.replace(" ", "")
@@ -376,5 +395,8 @@ def mutation_effect(cdna_variant):
 	if ">" in cdna_variant:
 		return point_mutation(seq, cdna_variant, original_protein)
 
-	return ""
+	print(f"variant format {cdna_variant} not recognized")
+	exit()
+
+	return "", ""
 
