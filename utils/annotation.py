@@ -23,6 +23,7 @@ three_letter_code = dict([(single_letter_code[k],k.capitalize()) for k in single
 sign_regex = r'[\-+−–]'
 minus_character = "-−–"
 
+complement = {'C':'G', 'A':'T', 'G':'C', 'T':'A'}
 
 def indel(seq, cdna_variant, original_protein, verbose=False):
 	# return
@@ -320,12 +321,12 @@ def splice_site(cdna_variant, verbose=False):
 				exon_bdry_corrected, splice_seq = get_backward_numbered_acceptor_splice(exon_bdry)
 			else:
 				exon_bdry_corrected, splice_seq = get_backward_numbered_donor_splice(pos)
-			if splice_seq[pos] == nt_from:
+			if splice_seq and splice_seq[pos] == nt_from:
 				if verbose: print("      ====> the reverse numbering of exons seems to work")
 				if verbose: print(splice_seq,  splice_seq[pos])
 				pos = ss_length-pos if direction == "-" else pos + 1
 				cdna_effect = f"{exon_bdry_corrected}{direction}{pos}{nt_from}>{nt_to}"
-			else:
+			elif splice_seq:
 				# if there is nucleotdie mismatch, see if we are counting the exons backwards
 				if verbose: print("      ============================>", splice_seq,  splice_seq[pos])
 				if verbose: print("      ============================> nt mismatch - try reverse complement of the sequence")
@@ -338,8 +339,10 @@ def splice_site(cdna_variant, verbose=False):
 					nt_to = str(Seq(nt_to).complement())
 					cdna_effect = f"{exon_bdry_corrected}{direction}{pos}{nt_from}>{nt_to}"
 				else:
-					if verbose: print("      ============> reverse complement of the sequence did not work either")
+					if verbose: print("      ============> reverse complement of the sequence did not work either (BAD)")
 					cdna_effect = "not reproducible"
+			else:
+				cdna_effect = "not reproducible  (BAD)"
 		else:
 			if splice_seq[pos] == nt_from:
 				if verbose: print(splice_seq,  splice_seq[pos])
@@ -357,7 +360,7 @@ def splice_site(cdna_variant, verbose=False):
 					nt_to = str(Seq(nt_to).complement())
 					cdna_effect = f"{exon_bdry}{direction}{pos}{nt_from}>{nt_to}"
 				else:
-					if verbose: print("      ============> reverse complement of the sequence did not work either")
+					if verbose: print("      ============> reverse complement of the sequence did not work either (BAD)")
 					cdna_effect = "splice   not reproducible"
 
 	return cdna_effect, protein_effect

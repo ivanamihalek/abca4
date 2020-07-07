@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
-import os
-import re
+import os, re, subprocess
 
 from utils.mysql import *
 from sys import argv, stdout
 from utils.abca4_gene import *
+from Bio.Seq  import Seq
+from Bio.Alphabet import generic_dna, generic_protein
 
 
 def parse_in(in_tsv):
@@ -23,8 +24,12 @@ def parse_in(in_tsv):
 	return cases
 
 
+sorted_exon_bdries = sorted(abca4_cdna2gdna.keys())
+
+
 ###########################################################
-def gdna_from_cdna(cdna_pos):
+def gdna_from_cdna(cdna_pos, verbose=True):
+	# return the position, and the nucleotide, for sanity checking
 	if cdna_pos is None:
 		print("cdna cannot be none here (do something)")
 		exit()
@@ -34,11 +39,50 @@ def gdna_from_cdna(cdna_pos):
 	elif "-"  in cdna_pos:
 		[cdna_pos, offset] = [int(i) for i in cdna_pos.split("-")]
 		offset = -offset
-	if cdna_pos in abca4_cdna2gdna:
-		print(f"{cdna_pos} not found in abca4_cdna2gdna")
 	else:
-		print(f"reconstructing value for {cdna_pos} in abca4_cdna2gdna")
-	exit()
+		cdna_pos = int(cdna_pos)
+	gdna_pos = None
+	if cdna_pos in abca4_cdna2gdna:
+		gdna_pos = abca4_cdna2gdna[cdna_pos] + offset
+		if verbose: print(f"{cdna_pos} is exon boundary;  gdna_pos = {gdna_pos}")
+	else:
+		if verbose: print(f"reconstructing value for {cdna_pos} in abca4_cdna2gdna")
+		p_prev = None
+		for i in range(1, len(sorted_exon_bdries)):
+			p_prev = sorted_exon_bdries[i-1]
+			p  = sorted_exon_bdries[i]
+			if cdna_pos<p:
+				# gdna_pos = abca4_cdna2gdna[p_prev] + cdna_pos - p_prev
+				# we ar on the - strand
+				gdna_pos = abca4_cdna2gdna[p_prev] - (cdna_pos - p_prev)
+				if verbose: print(f"{p_prev} < {cdna_pos} < {p}      {abca4_cdna2gdna[p_prev]}  {abca4_cdna2gdna[p]}        {gdna_pos}")
+				break
+	if not gdna_pos:
+		print("failed to reconstruct the gdna pos")
+		exit()
+	return gdna_pos
+
+
+def get_nt_from_gdna(region_start, region_end):
+	# this is a total hack that works only fo the current setup and chromosome 1
+	# blastdbcmd, cdna_fasta, seq_region_name
+	blastdbcmd = "/usr/bin/blastdbcmd"
+	cdna_fasta = "/storage/databases/ensembl-97/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_rm.toplevel.fa"
+	seq_region_name = "1"
+
+	[frm, to] = [region_start, region_end] if  region_start <= region_end else [region_end, region_start]
+
+	tmpfile = "tmp.fasta"
+	if os.path.exists(tmpfile): os.remove(tmpfile)
+	cmd  = f"{blastdbcmd} -db {cdna_fasta} -dbtype nucl -entry {seq_region_name} "
+	cmd += f"-range {frm}-{to} -out {tmpfile} -outfmt %s"
+	subprocess.call(["bash", "-c", cmd])
+	if not os.path.exists(tmpfile):
+		print(f"{tmpfile} not produced")
+		exit()
+	with open(tmpfile) as inf:
+		inseq = inf.read().replace("\n", "")
+	return inseq
 
 
 def parse_cdna(cdna_var):
@@ -67,10 +111,17 @@ def parse_cdna(cdna_var):
 		pos_from = pattern.group(1)
 		mod_from = pattern.group(2)
 		mod_to   = pattern.group(3)
-	print(f"\ncdna_var:{cdna_var}\n\tmod_type: {mod_type}\n\tpos_from: {pos_from}", end="")
-	print(f"\n\tpos_to: {pos_to}\n\tmod_from: {mod_from}\n\tmod_to: {mod_to}")
 	gdna_start = gdna_from_cdna(pos_from)
 	gdna_end = gdna_from_cdna(pos_to) if pos_to else gdna_start
+
+	# sanity
+	gdna_nt = Seq(get_nt_from_gdna(gdna_start, gdna_end)).reverse_complement()
+
+	print(f"\ncdna_var:{cdna_var}\n\tmod_type: {mod_type}\n\tpos_from: {pos_from}", end="")
+	print(f"\n\tpos_to: {pos_to}\n\tmod_from: {mod_from}  gdna_nt: {gdna_nt} \n\tmod_to: {mod_to}", end="")
+	print(f"\n\tgdna_start: {gdna_start}\n\tgdna_end: {gdna_end}")
+
+
 	return [gdna_start, gdna_end, mod_type, mod_from, mod_to]
 
 def  store_variants(cursor, c, p):
@@ -110,6 +161,13 @@ def  store_variants(cursor, c, p):
 
 #########################################
 def main():
+
+
+	parse_cdna('3811G>C')
+	print(get_cdna()[3810])
+	# parse_cdna('4510_4535del')
+	# print(get_cdna()[4509:4535])
+	exit()
 
 	if len(argv)<2:
 		print(f"usage: {argv[0]} <input tsv>")

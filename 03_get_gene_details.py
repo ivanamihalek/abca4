@@ -25,6 +25,8 @@ class Exon:
 		self.is_last = False
 		self.donor_splice = None
 		self.acceptor_splice = None
+	def to_string(self):
+		return f"id:{self.id}   start:{self.start}   end:{self.end}"
 
 def get_canonical_exon_bdries(cursor, ensembl_gene_id):
 
@@ -94,6 +96,7 @@ def get_cdna(cursor, blastdbcmd, cdna_fasta, seq_region_id, strand,  exons):
 
 	seq = ""
 	for exon in exons:
+		# print("exon:   ", exon.to_string())
 		tmpfile = "tmp.fasta"
 		if os.path.exists(tmpfile): os.remove(tmpfile)
 		cmd  = f"{blastdbcmd} -db {cdna_fasta} -dbtype nucl -entry {seq_region_name} "
@@ -119,18 +122,20 @@ def get_cdna(cursor, blastdbcmd, cdna_fasta, seq_region_id, strand,  exons):
 	cdna2gdna = {}
 	cumulative_length = 0
 	exon_boundary = 0
-	total_length = len(seq)
 
-	for exon in exons:
+	for exon in sorted(exons, key=lambda e: e.start, reverse=reverse):
 		acceptor_splice[exon_boundary+1] = exon.acceptor_splice
-		cdna2gdna[exon_boundary+1] = exon.start
+		cdna2gdna[exon_boundary+1] = exon.end if reverse else exon.start
 		cumulative_length += exon.end-exon.start+1
 
-		exon_boundary  = total_length - cumulative_length if reverse else cumulative_length
+		exon_boundary  = cumulative_length
 
 		donor_splice[exon_boundary] = exon.donor_splice
-		cdna2gdna[exon_boundary] = exon.end
+		cdna2gdna[exon_boundary] = exon.start if reverse else exon.end
 
+	# for eb in sorted(cdna2gdna.keys()):
+	# 	print(f"{eb}    {cdna2gdna[eb]}")
+	# exit()
 	print(cumulative_length, cumulative_length%3, cumulative_length/3)
 	biopython_dna = Seq(seq, generic_dna)
 	if reverse: biopython_dna = biopython_dna.reverse_complement()
@@ -186,8 +191,8 @@ def get_backward_numbered_donor_splice(bdry_pos):
 ########################################
 def main():
 
-	print("careful, this will rewrite  utils/abca4_gene.py")
-	exit()
+	# print("careful, this will overwrite  utils/abca4_gene.py")
+	# exit()
 
 	gene = "ABCA4"
 
