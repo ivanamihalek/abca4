@@ -281,8 +281,8 @@ def search_db(cursor, qry, verbose=False):
 ###################
 import json
 
-def read_creds ():
 
+def read_creds ():
 	[user, passwd, host, port] = [None, None, None, None]
 	with open('.creds') as data_file:
 		data = json.load(data_file)
@@ -293,6 +293,7 @@ def read_creds ():
 	if 'port' in data:   port   = data['port']
 
 	return [user, passwd, host, port]
+
 
 ########
 def connect_to_mysql (conf_file):

@@ -187,6 +187,7 @@ def point_mutation(seq, cdna_variant, original_protein, verbose=False):
 	protein_effect = f"{three_letter_code[original_protein[protein_pos]]}{protein_pos+1}{three_letter_code[new_protein[protein_pos]]}"
 	# special warning: if the last G before splice is mutated, that might affect splicing
 	if pos+1 in abca4_donor_splice and nt_from=="G": protein_effect += "splice"
+	if verbose: print("protein_effect", protein_effect)
 
 	return cdna_variant, protein_effect
 
@@ -200,7 +201,7 @@ def splice_site_IVS(cdna_variant, verbose=False):
 	if not variant_parse:
 		print("not parseable IVS:", cdna_variant)
 		exit()
-	exon_number = int(variant_parse.group(1))
+	intron_number = int(variant_parse.group(1))
 	direction = variant_parse.group(2)
 	# make sure we don't have any funny dash symbols for minus
 	if direction!="+": direction="-"
@@ -212,21 +213,24 @@ def splice_site_IVS(cdna_variant, verbose=False):
 	if direction=="-":
 		splice = abca4_acceptor_splice
 		pos = ss_length-orig_pos
+		# the first exon that has acceptor site is the second exon, -1 bcs of 0 offset
+		splice_position_index = intron_number
 	else:
 		splice = abca4_donor_splice
 		pos = orig_pos - 1  # 0-offset
-		exon_number -= 1
+		# the first exon that has donor site is the first exon, -1 bcs of 0 offset
+		splice_position_index = intron_number - 1
 
 	protein_effect = "splice"
-	cdna_position_of_the_intron = sorted(splice.keys())[exon_number]
+	cdna_position_of_the_intron = sorted(splice.keys())[splice_position_index]
 	splice_seq = splice[cdna_position_of_the_intron]
 	if splice_seq[pos] == nt_from:
 		cdna_variant = f"{cdna_position_of_the_intron}{direction}{orig_pos}{nt_from}>{nt_to}"
 		if pos<0 or pos>=ss_length:
 			protein_effect = "deep"
 	else:
-		cdna_variant = "splice not reproducible"
-		print(exon_number, direction, pos, nt_from, nt_to)
+		print(f"splice site not reproducible for {cdna_variant}")
+		print(intron_number, splice_position_index, cdna_position_of_the_intron, direction, pos, nt_from, nt_to)
 		print(cdna_position_of_the_intron)
 		print(splice_seq[:pos], splice_seq[pos], splice_seq[pos+1:])
 		print(Seq(splice_seq).reverse_complement())
@@ -240,6 +244,8 @@ def splice_site_del(cdna_variant, verbose=False):
 	if verbose: print("\n ====> ", cdna_variant)
 	# parse the variant
 	variant_parse = re.match(r'(\d+)([\-+−–])(\d+)_(\d+)([\-+−–])(\d+)del', cdna_variant)
+	pos_1 = None
+	pos_2 = None
 	if variant_parse:
 		exon_bdry_1  = int(variant_parse.group(1))
 		direction_1  = variant_parse.group(2)
@@ -268,15 +274,21 @@ def splice_site_del(cdna_variant, verbose=False):
 	else:
 		splice = abca4_donor_splice
 
-	cdna_effect = cdna_variant
+
 	protein_effect = "splice"
 	# if the variant is further away than the sequence we have stored return "deep intronic"
 	if pos_1<0 or pos_1>=ss_length:
-		cdna_effect = "splice   corrected: deep intronic"
+		protein_effect = "deep"
 	else:
 		splice_seq = splice.get(exon_bdry_1, "not found")
 		if splice_seq=="not found":
 			cdna_effect = f"splice not reproducible {cdna_effect}"
+		else:
+			if pos_2:
+				cdna_effect = f"{exon_bdry_1}{direction_1}{pos_1}_{exon_bdry_1}{direction_1}{pos_2}del"
+			else:
+				cdna_effect = f"{exon_bdry_1}{direction_1}{pos_1}del"
+
 	if verbose: print("      ================>", cdna_effect)
 
 	return cdna_effect, protein_effect

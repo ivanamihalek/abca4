@@ -40,9 +40,9 @@ CREATE TABLE `alleles` (
 DROP TABLE IF EXISTS `variants`;
 CREATE TABLE `variants`(
   `id` mediumint(9) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `gdna_start` int NOT NULL,
-  `gdna_end`   int NOT NULL,
-  `mod_type` ENUM ('del', 'ins', 'sub', 'delins'),
+  `gdna_start` int,
+  `gdna_end`   int,
+  `mod_type` ENUM ('del', 'ins', 'sub', 'delins', 'dup', 'unk') default 'unk',
   `nt_from`  varchar(50),
   `nt_to`    varchar(50),
   `cdna`    varchar(100),
@@ -56,7 +56,7 @@ CREATE TABLE `variants`(
   -- null refers to no protein product
   -- ? means unknown
   -- [membrane, splicing, folding, transport]: impaired [membrane incorporation, splicing, folding, payload transport]
-  `systems_effect` ENUM ('null', '?', 'membrane', 'splicing', 'folding', 'transport') default '?',
+  `systems_effect` ENUM ('null', 'unk', 'membrane', 'splicing', 'folding', 'transport') default 'unk',
   `gnomad_freq` float,
   `gnomad_homozygotes` smallint
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

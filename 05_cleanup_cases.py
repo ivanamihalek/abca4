@@ -217,7 +217,7 @@ def allele_cleanup(cdna_allele_string, protein_allele_string,  verbose=False, ou
 			cdna_variant_clean, protein_variant_inferred = mutation_effect(cdna_variant)
 			if "splice" in protein_variant_inferred:
 				if verbose: print(" %-20s  %-20s"%(cdna_variant, protein_variant_inferred), file=outf)
-				protein_variant_inferred = "splice" # use as the place holder in case the allele has multiple variants
+				#protein_variant_inferred = "splice" # use as the place holder in case the allele has multiple variants
 			else:
 				if verbose: print(" %-20s  %-20s (inferred)"%(cdna_variant, protein_variant_inferred), file=outf)
 			protein_allele_clean.append(protein_variant_inferred)
@@ -341,7 +341,7 @@ def main():
 	print("number of cases", len(cases), file=logf)
 
 	# self consistency check
-	cases = parse_in(out_tsv, verbose=True, outf=logf, faux=True)
+	# cases = parse_in(out_tsv, verbose=True, outf=logf, faux=True)
 
 
 
