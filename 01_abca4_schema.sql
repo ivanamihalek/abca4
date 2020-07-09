@@ -26,10 +26,12 @@ CREATE TABLE `cases` (
   `progression` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- we will store variant_ids as a string of alphabetically sorted ids joined by "-"
+-- it lloks like "_" underscore is a special character in mysql while dash (minus) is not
 DROP TABLE IF EXISTS `alleles`;
 CREATE TABLE `alleles` (
-  `id` mediumint(9) NOT NULL,
-  `variant_id` mediumint(9) NOT NULL
+  `id` mediumint(9) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+  `variant_ids` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

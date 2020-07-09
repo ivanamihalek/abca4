@@ -37,7 +37,7 @@ def first_nucleoutide_after_acceptor():
 
 # really bad
 # finger counting, hand waving, light perception
-perception_methods = ["finger", "hand", "fc", "hw", "light"]
+perception_methods = ["finger", "hand", "fc", "hw", "light", "hm"]
 
 
 def normalize(value_type, acuity):
@@ -45,7 +45,7 @@ def normalize(value_type, acuity):
 	for method in perception_methods:
 		if method in value_type: return 0.0
 
-	if "/" in acuity:
+	if "/" in acuity: # this is BCVA
 		[nom,denom] = acuity.split("/")
 		return float(nom)/float(denom)
 
@@ -54,7 +54,13 @@ def normalize(value_type, acuity):
 			# print(acuity, pow(10, -float(acuity)))
 			return pow(10, -float(acuity))
 		except:
-			return 0.0
+			print (f"logMAR conversion failed for {value_type} {acuity}")
+			exit()
+	else:
+		acuity = float(acuity)
+		if acuity<0 or acuity>1.0:
+			print(f"acuity out of range {value_type} {acuity}")
+			exit()
 	return 0.0
 
 
@@ -217,7 +223,6 @@ def allele_cleanup(cdna_allele_string, protein_allele_string,  verbose=False, ou
 			cdna_variant_clean, protein_variant_inferred = mutation_effect(cdna_variant)
 			if "splice" in protein_variant_inferred:
 				if verbose: print(" %-20s  %-20s"%(cdna_variant, protein_variant_inferred), file=outf)
-				#protein_variant_inferred = "splice" # use as the place holder in case the allele has multiple variants
 			else:
 				if verbose: print(" %-20s  %-20s (inferred)"%(cdna_variant, protein_variant_inferred), file=outf)
 			protein_allele_clean.append(protein_variant_inferred)
@@ -249,12 +254,14 @@ def parse_in(in_tsv, verbose=False, outf=None, faux=False):
 	cases = {}
 	inf = open(in_tsv)
 	linect = 0
+	reference = {}
 	for line in inf:
 		if verbose: print(line.strip())
 		fields = [f.strip() for f in line.split('\t')]
 		if 'pubmed' in fields[0].lower(): continue # this is the header
 		linect +=1
 		[pmid, ref, patient_id, cdna1, protein1, cdna2, protein2, hapl_tested, comment, value_type, onset] = fields[:11]
+		reference[pmid] = ref.replace(" ","")
 		try:
 			onset = int(onset)
 		except:
@@ -297,7 +304,7 @@ def parse_in(in_tsv, verbose=False, outf=None, faux=False):
 
 	inf.close()
 	if verbose: print("lines read in", linect, file=outf)
-	return cases
+	return cases, reference
 
 
 
@@ -305,16 +312,6 @@ def parse_in(in_tsv, verbose=False, outf=None, faux=False):
 def main():
 	# run this once with verbose True option to make sure you can live with all mismatches in the mutation interpretation
 	# (or delete from input if you cannot)
-
-	# last_nucleoutide_bedore_donor() # this really seems to be overwhelmingly G
-	# first_nucleoutide_after_acceptor() $ this is more commonly G, but not as overwhlmingly as in the case of donor
-	# exit()
-
-	# codon = get_codons()[2029]
-	# print(codon)
-	# print(f"CGA  {Seq('CGA').translate()}   AGA {Seq('AGA').translate()}   TGA {Seq('TGA').translate()} ")
-	# exit()
-
 
 	if len(argv)<2:
 		print(f"usage: {argv[0]} <input tsv>")
@@ -330,14 +327,14 @@ def main():
 
 	# logf = open("load_cases.log", "w")
 	logf = None
-	cases = parse_in(in_tsv, verbose=False, outf=logf)
+	cases, reference = parse_in(in_tsv, verbose=False, outf=logf)
 
 	out_tsv = in_tsv[:-4] + ".clean.tsv"
 	with open(out_tsv, "w") as outf:
 		for case, data in cases.items():
 			[pubmed_id, patient_id] = case.split("\t")
 			[c1, p1, c2, p2, value, onset, progression_string] = data
-			print("\t".join([pubmed_id, "blah", patient_id, c1, p1, c2, p2,  "blah", "blah", value, str(onset), progression_string]),  file=outf)
+			print("\t".join([pubmed_id, reference[pubmed_id], patient_id, c1, p1, c2, p2,  "blah", "blah", value, str(onset), progression_string]),  file=outf)
 	print("number of cases", len(cases), file=logf)
 
 	# self consistency check
@@ -350,3 +347,38 @@ def main():
 if __name__ == '__main__':
 	main()
 
+'''
+various experiments
+
+
+	# last_nucleoutide_bedore_donor() # this really seems to be overwhelmingly G
+	# first_nucleoutide_after_acceptor() $ this is more commonly G, but not as overwhlmingly as in the case of donor
+	# exit()
+
+	# codon = get_codons()[2029]
+	# print(codon)
+	# print(f"CGA  {Seq('CGA').translate()}   AGA {Seq('AGA').translate()}   TGA {Seq('TGA').translate()} ")
+	# exit()
+
+	#  5161_5162delAC and 5160_5161delCA have the same consequence on the protin level
+	# print(get_cdna()[5159:5162])
+	# codon = get_codons()
+	# protein = get_protein()
+	# for aa in range(1718,1726):
+	# 	print(aa, aa*3, codon[aa-1], protein[aa-1], Seq(codon[aa-1]).translate())
+	# print()
+	
+	# CAC
+	# 1718 5154 GTG V V
+	# 1719 5157 AGC S S
+	# 1720 5160 CCC P P
+	# 1721 5163 ACC T T
+	# 1722 5166 ACC T T
+	# 1723 5169 TAC Y Y
+	# 1724 5172 TGG W W
+	# 1725 5175 GTG V V
+	# exit()
+
+
+
+'''

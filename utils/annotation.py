@@ -68,7 +68,9 @@ def indel(seq, cdna_variant, original_protein, verbose=False):
 			if new_protein[i]=="*" or original_protein[i]=="*":
 				fs_end = i
 				break
-		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
+		protein_effect = f"{first}"
+		if fs_end>fs_start: protein_effect += f"fsTer{fs_end-fs_start+1}"
+
 	if verbose: print(">>>>>>>>>>>>>>>>", position, inserted_nt, protein_effect)
 	return cdna_variant, protein_effect
 
@@ -84,6 +86,8 @@ def insert(seq, cdna_variant, original_protein, verbose=False):
 	else:
 		# c.3211insGT
 		position  = [int(field[0]) - 1, int(field[0])]
+		# this is nonstandard - so enforce standard
+		cdna_variant = f"{int(field[0])}_{int(field[0])+1}ins{field[1]}"
 
 	inserted_nt = field[1]
 
@@ -106,7 +110,10 @@ def insert(seq, cdna_variant, original_protein, verbose=False):
 			if new_protein[i]=="*" or original_protein[i]=="*":
 				fs_end = i
 				break
-		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
+		protein_effect = f"{first}"
+		if fs_end>fs_start: protein_effect += f"fsTer{fs_end-fs_start+1}"
+
+
 	if verbose: print(">>>>>>>>>>>>>>>>", protein_effect)
 	return cdna_variant, protein_effect
 
@@ -114,13 +121,21 @@ def insert(seq, cdna_variant, original_protein, verbose=False):
 def deletion(seq, cdna_variant, original_protein, verbose=False):	#return
 	if verbose: print("processing deletion: cdna_variant", cdna_variant)
 	# trying to accomodate various non-standard ways of writing down the variant
-	if "_" in cdna_variant:
+	field = cdna_variant.split("del")
+	if "_" in field[0]:
 		# example 4663_4664del
 		# however, can also have 850_857delATTCAAGA
-		position = [int(i) - 1 for i in cdna_variant.split("del")[0].split("_")]
+		position = [int(i) - 1 for i in field[0].split("_")]
+		# enforce standard
+		cdna_variant = f"{field[0]}del" # non nucleotide sequence
+
 	else:
 		# I've seen 4739del, but also 4739delT for the same thing
-		position  = [int(cdna_variant.split("del")[0]) - 1]
+		position  = [int(field[0]) - 1]
+		if len(field)==2 and len(field[1])>1: # this should be the nucleotide sequence
+			cdna_variant = f"{int(field[0])}_{int(field[0])+len(field[1])-1}del"
+		else:
+			cdna_variant = f"{int(field[0])}del"
 
 	if len(position)==1: position.append(position[0])
 
@@ -144,7 +159,9 @@ def deletion(seq, cdna_variant, original_protein, verbose=False):	#return
 			if new_protein[i]=="*" or original_protein[i]=="*":
 				fs_end = i
 				break
-		protein_effect = f"{first}fsTer{fs_end-fs_start+1}"
+		protein_effect = f"{first}"
+		if fs_end>fs_start: protein_effect += f"fsTer{fs_end-fs_start+1}"
+
 	if verbose: print(">>>>> ooo >>>>>>>>>", protein_effect)
 	return cdna_variant, protein_effect
 
@@ -155,11 +172,11 @@ def duplication(seq, cdna_variant, original_protein, verbose=False):
 		# split in case somebody gave us the actual duplicated sequence
 		if verbose: print(cdna_variant)
 		position = [int(i)  for i in cdna_variant.split("dup")[0].split("_")]
-		cdna_variant_as_insert = f"{position[1]}ins{seq[position[0]-1:position[1]]}"
+		cdna_variant_as_insert = f"{position[1]}_{position[1]+1}ins{seq[position[0]-1:position[1]]}"
 	else:
 		# 4604dup
 		position  = int(cdna_variant.split("dup")[0])
-		cdna_variant_as_insert = f"{position}ins{seq[position-1]}"
+		cdna_variant_as_insert = f"{position}_{position+1}ins{seq[position-1]}"
 
 	return insert(seq, cdna_variant_as_insert, original_protein, verbose)
 
