@@ -2,6 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3bac899b-291d-4212-9723-444346ec6ed7" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/11_gnomad.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/33_onset_age_distribution.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/utils/abca4_mysql.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_abca4_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/01_abca4_schema.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/38_xlsx_creator.py" beforeDir="false" afterPath="$PROJECT_DIR$/38_xlsx_creator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/abca4_genphen.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/abca4_genphen.xlsx" afterDir="false" />
     </list>
@@ -14,14 +20,65 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="38_xlsx_creator.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/38_xlsx_creator.py">
+      <file leaf-file-name="33_onset_age_distribution.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/33_onset_age_distribution.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="112">
-              <caret line="36" column="61" selection-start-line="36" selection-start-column="61" selection-end-line="36" selection-end-column="61" />
+            <state relative-caret-position="90">
+              <caret line="5" column="31" lean-forward="true" selection-start-line="5" selection-start-column="31" selection-end-line="5" selection-end-column="31" />
               <folding>
-                <element signature="e#24#49#0" expanded="true" />
+                <element signature="e#24#56#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="01_abca4_schema.sql" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/01_abca4_schema.sql">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="651">
+              <caret line="71" column="29" lean-forward="true" selection-start-line="71" selection-start-column="29" selection-end-line="71" selection-end-column="29" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="11_gnomad.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/11_gnomad.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="414">
+              <caret line="23" column="52" selection-start-line="23" selection-start-column="52" selection-end-line="23" selection-end-column="52" />
+              <folding>
+                <element signature="e#20#45#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="07_load_cases.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/07_load_cases.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="788">
+              <caret line="336" lean-forward="true" selection-start-line="294" selection-end-line="336" />
+              <folding>
+                <element signature="e#20#45#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mysql.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/mysql.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="298">
+              <caret line="29" column="4" selection-start-line="29" selection-start-column="4" selection-end-line="29" selection-end-column="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="abca4_mysql.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/abca4_mysql.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="36">
+              <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
             </state>
           </provider>
         </entry>
@@ -43,6 +100,7 @@
       <find>inserted</find>
       <find>failed to reconstruct the gdna pos</find>
       <find>|</find>
+      <find>if</find>
     </findStrings>
     <replaceStrings>
       <replace>if verbose: print</replace>
@@ -63,15 +121,18 @@
         <option value="$PROJECT_DIR$/utils/mysql.py" />
         <option value="$PROJECT_DIR$/utils/abca4_gene.py" />
         <option value="$PROJECT_DIR$/utils/annotation.py" />
-        <option value="$PROJECT_DIR$/01_abca4_schema.sql" />
         <option value="$PROJECT_DIR$/05_cleanup_cases.py" />
         <option value="$PROJECT_DIR$/07_load_cases.py" />
         <option value="$PROJECT_DIR$/09_check_open_access.py" />
         <option value="$PROJECT_DIR$/38_xlsx_creator.py" />
+        <option value="$PROJECT_DIR$/utils/abca4_mysql.py" />
+        <option value="$PROJECT_DIR$/33_onset_age_distribution.py" />
+        <option value="$PROJECT_DIR$/01_abca4_schema.sql" />
+        <option value="$PROJECT_DIR$/11_gnomad.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="1920" />
     <option name="width" value="1920" />
     <option name="height" value="1080" />
@@ -81,7 +142,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -98,6 +158,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -134,9 +195,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1920" y="0" width="1920" height="1080" extended-state="6" />
+    <frame x="1920" y="0" width="1920" height="1080" extended-state="7" />
     <editor active="true" />
     <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1444386" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info id="DB Browser" order="2" />
       <window_info anchor="bottom" id="DB Execution Console" order="7" />
@@ -144,10 +206,8 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1444386" />
-      <window_info anchor="bottom" id="Find" order="1" visible="true" weight="0.21940929" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -156,6 +216,7 @@
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" visible="true" weight="0.21940929" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -163,17 +224,24 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="4" />
+      <option name="time" value="5" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/38_xlsx_creator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1026">
+          <caret line="59" column="61" lean-forward="true" selection-start-line="59" selection-start-column="61" selection-end-line="59" selection-end-column="61" />
+          <folding>
+            <element signature="e#24#49#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/05_cleanup_cases.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5382">
           <caret line="304" column="54" lean-forward="true" selection-start-line="304" selection-start-column="54" selection-end-line="304" selection-end-column="54" />
-          <folding>
-            <element signature="e#20#29#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -198,31 +266,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3834">
           <caret line="222" column="85" selection-start-line="222" selection-start-column="85" selection-end-line="222" selection-end-column="85" />
-          <folding>
-            <element signature="e#72#174#0" />
-            <element signature="e#460#712#0" />
-            <element signature="e#1050#1058#0" />
-            <element signature="e#1238#1377#0" />
-            <element signature="e#1387#1438#0" />
-            <element signature="e#2454#2711#0" />
-            <element signature="e#2500#2631#0" />
-            <element signature="e#2523#2631#0" />
-            <element signature="e#2691#2711#0" />
-            <element signature="e#4038#4295#0" />
-            <element signature="e#4084#4215#0" />
-            <element signature="e#4107#4215#0" />
-            <element signature="e#4275#4295#0" />
-            <element signature="e#4632#6327#0" />
-            <element signature="e#5012#5069#0" />
-            <element signature="e#6847#7781#0" />
-            <element signature="e#7024#7070#0" />
-            <element signature="e#8097#8147#0" />
-            <element signature="e#11599#11645#0" />
-            <element signature="e#13049#13311#0" />
-            <element signature="e#13716#14065#0" />
-            <element signature="e#15430#16441#0" />
-            <element signature="e#15633#15810#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -230,9 +273,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="342">
           <caret line="19" selection-start-line="17" selection-end-line="19" />
-          <folding>
-            <element signature="e#522#531#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -257,31 +297,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="54">
           <caret line="3" column="73" selection-start-line="3" selection-start-column="73" selection-end-line="3" selection-end-column="73" />
-          <folding>
-            <element signature="e#72#174#0" />
-            <element signature="e#460#712#0" />
-            <element signature="e#1050#1058#0" />
-            <element signature="e#1238#1377#0" />
-            <element signature="e#1387#1438#0" />
-            <element signature="e#2454#2711#0" />
-            <element signature="e#2500#2631#0" />
-            <element signature="e#2523#2631#0" />
-            <element signature="e#2691#2711#0" />
-            <element signature="e#4038#4295#0" />
-            <element signature="e#4084#4215#0" />
-            <element signature="e#4107#4215#0" />
-            <element signature="e#4275#4295#0" />
-            <element signature="e#4632#6327#0" />
-            <element signature="e#5012#5069#0" />
-            <element signature="e#6847#7781#0" />
-            <element signature="e#7024#7070#0" />
-            <element signature="e#8097#8147#0" />
-            <element signature="e#11599#11645#0" />
-            <element signature="e#13049#13311#0" />
-            <element signature="e#13716#14065#0" />
-            <element signature="e#15430#16441#0" />
-            <element signature="e#15633#15810#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -289,9 +304,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="72">
           <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
-          <folding>
-            <element signature="e#20#29#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -330,9 +342,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="288">
           <caret line="16" column="48" lean-forward="true" selection-start-line="16" selection-start-column="48" selection-end-line="16" selection-end-column="48" />
-          <folding>
-            <element signature="e#20#29#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -357,9 +366,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="11" column="60" selection-start-line="11" selection-start-column="60" selection-end-line="11" selection-end-column="60" />
-          <folding>
-            <element signature="e#20#29#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -367,9 +373,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="468">
           <caret line="28" column="4" selection-start-line="28" selection-start-column="4" selection-end-line="28" selection-end-column="4" />
-          <folding>
-            <element signature="e#20#29#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -419,9 +422,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="702">
           <caret line="144" selection-start-line="143" selection-end-line="144" />
-          <folding>
-            <element signature="e#522#531#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -429,45 +429,27 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-390">
           <caret line="70" column="35" selection-start-line="70" selection-start-column="35" selection-end-line="70" selection-end-column="35" />
-          <folding>
-            <element signature="e#72#174#0" />
-            <element signature="e#460#712#0" />
-            <element signature="e#1050#1058#0" />
-            <element signature="e#1238#1377#0" />
-            <element signature="e#1387#1438#0" />
-            <element signature="e#2454#2711#0" />
-            <element signature="e#2500#2631#0" />
-            <element signature="e#2523#2631#0" />
-            <element signature="e#2691#2711#0" />
-            <element signature="e#4038#4295#0" />
-            <element signature="e#4084#4215#0" />
-            <element signature="e#4107#4215#0" />
-            <element signature="e#4275#4295#0" />
-            <element signature="e#4632#6327#0" />
-            <element signature="e#5012#5069#0" />
-            <element signature="e#6847#7781#0" />
-            <element signature="e#7024#7070#0" />
-            <element signature="e#8097#8147#0" />
-            <element signature="e#11599#11645#0" />
-            <element signature="e#13049#13311#0" />
-            <element signature="e#13716#14065#0" />
-            <element signature="e#15430#16441#0" />
-            <element signature="e#15633#15810#0" />
-          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/05_cleanup_cases.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="280">
+          <caret line="330" lean-forward="true" selection-start-line="330" selection-end-line="330" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/09_check_open_access.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="36">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/utils/abca4_gene.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
+        <state relative-caret-position="597">
           <caret line="314" column="7" selection-start-line="314" selection-start-column="4" selection-end-line="314" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/01_abca4_schema.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="41" column="32" selection-start-line="41" selection-start-column="32" selection-end-line="41" selection-end-column="32" />
         </state>
       </provider>
     </entry>
@@ -478,49 +460,63 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/07_load_cases.py">
+    <entry file="file://$PROJECT_DIR$/38_xlsx_creator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="500">
-          <caret line="311" lean-forward="true" selection-start-line="310" selection-end-line="311" />
+        <state relative-caret-position="756">
+          <caret line="42" column="33" lean-forward="true" selection-start-line="42" selection-start-column="33" selection-end-line="42" selection-end-column="33" />
           <folding>
-            <element signature="e#20#45#0" expanded="true" />
+            <element signature="e#24#49#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/utils/mysql.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="4" column="4" selection-start-line="4" selection-start-column="4" selection-end-line="4" selection-end-column="4" />
+        <state relative-caret-position="298">
+          <caret line="29" column="4" selection-start-line="29" selection-start-column="4" selection-end-line="29" selection-end-column="4" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/05_cleanup_cases.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="330" lean-forward="true" selection-start-line="330" selection-end-line="330" />
-          <folding>
-            <element signature="e#20#29#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/09_check_open_access.py">
+    <entry file="file://$PROJECT_DIR$/utils/abca4_mysql.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
-          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
+          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_abca4_schema.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="651">
+          <caret line="71" column="29" lean-forward="true" selection-start-line="71" selection-start-column="29" selection-end-line="71" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/33_onset_age_distribution.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="5" column="31" lean-forward="true" selection-start-line="5" selection-start-column="31" selection-end-line="5" selection-end-column="31" />
           <folding>
-            <element signature="e#23#52#0" expanded="true" />
+            <element signature="e#24#56#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/38_xlsx_creator.py">
+    <entry file="file://$PROJECT_DIR$/07_load_cases.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="112">
-          <caret line="36" column="61" selection-start-line="36" selection-start-column="61" selection-end-line="36" selection-end-column="61" />
+        <state relative-caret-position="788">
+          <caret line="336" lean-forward="true" selection-start-line="294" selection-end-line="336" />
           <folding>
-            <element signature="e#24#49#0" expanded="true" />
+            <element signature="e#20#45#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/11_gnomad.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="414">
+          <caret line="23" column="52" selection-start-line="23" selection-start-column="52" selection-end-line="23" selection-end-column="52" />
+          <folding>
+            <element signature="e#20#45#0" expanded="true" />
           </folding>
         </state>
       </provider>

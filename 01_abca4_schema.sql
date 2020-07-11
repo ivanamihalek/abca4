@@ -53,14 +53,17 @@ CREATE TABLE `variants`(
   `protein` varchar(100),
   `protein_exp_verification` varchar(100),
   `protein_exp_publication` mediumint(9),
-  -- loop: loop between domains
-  `protein_domain` ENUM ('NBD1', 'NBD2', 'TMD1', 'TMD2', 'ECD1', 'ECD2', 'R', 'N-term', 'C-term' ,'loop'),
+  `gnomad_freq` float,
+  `gnomad_homozygotes` smallint,
+  -- linker: linker between domains
+  `protein_domain` ENUM ('NBD1', 'NBD2', 'TMD1', 'TMD2', 'ECD1', 'ECD2', 'R', 'N-term', 'C-term' ,'linker'),
+  `sec_structure_element` ENUM ('helix', 'strand', 'loop'),
   -- null refers to no protein product
   -- ? means unknown
   -- [membrane, splicing, folding, transport]: impaired [membrane incorporation, splicing, folding, payload transport]
-  `systems_effect` ENUM ('null', 'unk', 'membrane', 'splicing', 'folding', 'transport') default 'unk',
-  `gnomad_freq` float,
-  `gnomad_homozygotes` smallint
+  `conserved_in_ortho` tinyint,
+  `conserved_in_para` tinyint,
+  `systems_effect` ENUM ('null', 'unk', 'membrane', 'splicing', 'folding', 'transport') default 'unk'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 

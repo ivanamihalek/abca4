@@ -4,20 +4,7 @@
 from utils.mysql import *
 
 import xlsxwriter
-
-
-def variants_from_allele(cursor, allele_id):
-	qry = f"select variant_ids from alleles where id = {allele_id}"
-	var_ids = [v[1:-1].split("-") for v in hard_landing_search(cursor, qry)[0]]
-	for vi in var_ids:
-		qry = f"select cdna, protein from variants where id in ({','.join(vi)})"
-		cdna = []
-		protein = []
-		for [c, p] in hard_landing_search(cursor, qry):
-			cdna.append(f"c.{c}" if c else "np")
-			protein.append(f"p.{p}")
-	return "; ".join(cdna), "; ".join(protein)
-
+from utils.abca4_mysql import  *
 
 ################
 def column_string(idx):
@@ -40,7 +27,7 @@ def set_column_widths(worksheet, header, wwrap_format):
 		idx = header.index(title)
 		worksheet.set_column(column_string(idx), 30, wwrap_format)
 
-	for title in [ "allele 1: protein",  "allele 2: protein"]:
+	for title in ["allele 1: protein",  "allele 2: protein"]:
 		idx = header.index(title)
 		worksheet.set_column(column_string(idx), 2*len(title), wwrap_format)
 
@@ -56,7 +43,8 @@ def table_creator(cursor, workbook, xlsx_format):
 	worksheet.set_default_row(25)
 
 	# header
-	header = ["pubmed", "reference", "patient", "allele 1: cdna",  "allele 1: protein", "allele 2: cdna",  "allele 2: protein" ]
+	header = ["pubmed", "reference", "patient", "allele 1: cdna",  "allele 1: protein", "allele 2: cdna",
+	          "allele 2: protein", "onset age", "progression"]
 	set_column_widths(worksheet, header, xlsx_format["wordwrap"])
 	write_header(worksheet, header, xlsx_format["header"])
 	# rows
@@ -79,7 +67,7 @@ def table_creator(cursor, workbook, xlsx_format):
 		worksheet.write_url(row, column, pmc_hyperlink, string=reference)
 		column += 1
 
-		for content in [patient_xref_id, cdna1, prot1, cdna2, prot2]:
+		for content in [patient_xref_id, cdna1, prot1, cdna2, prot2, onset_age, progression]:
 			worksheet.write(row, column, content)
 			column += 1
 
