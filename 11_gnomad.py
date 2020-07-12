@@ -8,24 +8,23 @@ from utils.mysql import *
 
 #########################################
 def main():
-	# parse_cdna('972_973delinsAT')
-	# # #print(get_cdna()[3810])
-	# # #parse_cdna('4510_4535del')
-	# # #print(get_cdna()[4509:4535])
-	# exit()
 
 	db, cursor = abca4_connect()
 
-	for [gdna_start, nt_from, nt_to, protein] in hard_landing_search(cursor, "select gdna_start, nt_from, nt_to, protein from variants"):
+	for [variant_id, gdna_start, nt_from, nt_to, protein] in hard_landing_search(cursor, "select id, gdna_start, nt_from, nt_to, protein from variants"):
 		if not gdna_start: continue
-		qry = f"select position, reference, variant, variant_count, total_count from gnomad.freqs_chr_1 where position={gdna_start}"
+		qry  = "select position, reference, variant, variant_count, total_count, homozygote_count "
+		qry += f"from gnomad.freqs_chr_1 where position={gdna_start}"
 		ret = error_intolerant_search(cursor, qry)
 		if not ret: continue
 		print(gdna_start, nt_from, nt_to, "      ", protein)
 		for line in ret:
-			[position, reference, variant, variant_count, total_count] = line
-			print("\t", position, reference, variant, "%.1e"%(float(variant_count)/total_count))
-
+			[position, reference, variant, variant_count, total_count, homozygote_count] = line
+			freq = "%.1e"%(float(variant_count)/total_count)
+			print("\t", position, reference, variant, freq, homozygote_count)
+			if reference==nt_from and variant==nt_to:
+				qry = f"update variants set gnomad_freq={freq}, gnomad_homozygotes={homozygote_count} where id={variant_id}"
+				ret = error_intolerant_search(cursor, qry)
 	cursor.close()
 	db.close()
 

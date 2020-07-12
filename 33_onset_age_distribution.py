@@ -23,7 +23,7 @@ def is_null(cdna, prot):
 		min_match = 50
 		for match in pattern:
 			if int(match[1])<min_match: min_match=int(match[1])
-		if min_match<3:  return True
+		if min_match<3: return True
 		return False
 	# the original splice pos not reported, or the last nulcotide befor the splice
 	if "splice"in prot.lower(): return True
@@ -33,9 +33,8 @@ def is_null(cdna, prot):
 #########################################
 def main():
 
-
 	db, cursor = abca4_connect()
-	number_of_bins = 64
+	number_of_bins = 75
 	bin_size = 1
 	bins = []
 	for b in range(number_of_bins):
@@ -49,6 +48,12 @@ def main():
 		cdna1, prot1 = variants_from_allele(cursor, allele_id_1)
 		cdna2, prot2 = variants_from_allele(cursor, allele_id_2)
 		if onset_age<0: continue
+
+		if "splice" in prot1 or "splice" in prot2: continue
+		if "deep" in prot1 or "deep" in prot2: continue
+		if "Ter" in prot1 or "Ter" in prot2: continue
+		if "del" in prot1 or "del" in prot2: continue
+
 		age_set["all"].append(onset_age)
 		if is_null(cdna1, prot1) and  is_null(cdna2, prot2):
 			age_set["both null"].append(onset_age)
@@ -56,6 +61,8 @@ def main():
 			age_set["one null"].append(onset_age)
 		else:
 			age_set["none null"].append(onset_age)
+			if onset_age<5: print(f"{cdna1},    {prot1},        {cdna2},   {prot2}")
+
 	cursor.close()
 	db.close()
 

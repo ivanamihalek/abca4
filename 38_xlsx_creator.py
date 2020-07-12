@@ -43,8 +43,10 @@ def table_creator(cursor, workbook, xlsx_format):
 	worksheet.set_default_row(25)
 
 	# header
-	header = ["pubmed", "reference", "patient", "allele 1: cdna",  "allele 1: protein", "allele 2: cdna",
-	          "allele 2: protein", "onset age", "progression"]
+	header = ["pubmed", "reference", "patient",
+	          "allele 1: cdna", "allele 1: protein", "allele 1: frequency", "allele 1: homozygotes",
+	          "allele 2: cdna", "allele 2: protein", "allele 2: frequency", "allele 2: homozygotes",
+	          "onset age", "progression"]
 	set_column_widths(worksheet, header, xlsx_format["wordwrap"])
 	write_header(worksheet, header, xlsx_format["header"])
 	# rows
@@ -52,8 +54,8 @@ def table_creator(cursor, workbook, xlsx_format):
 	qry = "select allele_id_1, allele_id_2, publication_id, patient_xref_id, onset_age, progression from cases"
 	for case in hard_landing_search(cursor, qry):
 		[allele_id_1, allele_id_2, publication_id, patient_xref_id, onset_age, progression] = case
-		cdna1, prot1 = variants_from_allele(cursor, allele_id_1)
-		cdna2, prot2 = variants_from_allele(cursor, allele_id_2)
+		cdna1, prot1, freqs1, homozygs1 = variants_from_allele(cursor, allele_id_1)
+		cdna2, prot2, freqs2, homozygs2 = variants_from_allele(cursor, allele_id_2)
 		row += 1
 		column = 0
 
@@ -67,7 +69,8 @@ def table_creator(cursor, workbook, xlsx_format):
 		worksheet.write_url(row, column, pmc_hyperlink, string=reference)
 		column += 1
 
-		for content in [patient_xref_id, cdna1, prot1, cdna2, prot2, onset_age, progression]:
+		for content in [patient_xref_id, cdna1, prot1, freqs1, homozygs1,
+		                cdna2, prot2, freqs2, homozygs2, onset_age, progression]:
 			worksheet.write(row, column, content)
 			column += 1
 

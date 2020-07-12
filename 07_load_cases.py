@@ -192,10 +192,14 @@ def store_variant_w_known_cdna(cursor, cdna_var, protein_var, var_ids, verbose):
 				print(f"mismatch for {cdna_var}: {protein_in_db} {protein_var} (how did we end up here?)")
 				return False
 			else:
+				# note: specific for abca4 - we are on the minus strand
+				nt_from_cpl = Seq(nt_from).reverse_complement() if type(nt_from)==str else nt_from
+				nt_to_cpl = Seq(nt_to).reverse_complement() if type(nt_to)==str else nt_to
 				qry = f"update variants set gdna_start={gdna_start}, gdna_end={gdna_end}, "
-				qry += f"mod_type='{mod_type}', nt_from='{nt_from}', nt_to='{nt_to}', cdna='{cdna_var}' "
+				qry += f"mod_type='{mod_type}', nt_from='{nt_from_cpl}', nt_to='{nt_to_cpl}', cdna='{cdna_var}' "
 				qry += f"where id={var_id}"
 				if search_db(cursor, qry, verbose=verbose): return False
+
 		elif gdna_start_in_db != gdna_start or gdna_end_in_db != gdna_end or protein_in_db != protein_var:
 			# sometimes this is not a mistake - find a solution for this some other time
 			# for now just print out the warning and store
@@ -204,8 +208,11 @@ def store_variant_w_known_cdna(cursor, cdna_var, protein_var, var_ids, verbose):
 			print(gdna_start_in_db, gdna_end_in_db, protein_in_db)
 			print(gdna_start, gdna_end, protein_var)
 			print("===============================")
+
+			nt_from_cpl = Seq(nt_from).reverse_complement() if type(nt_from)==str else nt_from
+			nt_to_cpl = Seq(nt_to).reverse_complement() if type(nt_to)==str else nt_to
 			qry = "insert into variants (gdna_start, gdna_end, mod_type, nt_from, nt_to, cdna, protein) "
-			qry += f"values ({gdna_start}, {gdna_end}, '{mod_type}', '{nt_from}', '{nt_to}', '{cdna_var}', '{protein_var}')"
+			qry += f"values ({gdna_start}, {gdna_end}, '{mod_type}', '{nt_from_cpl}', '{nt_to_cpl}', '{cdna_var}', '{protein_var}')"
 			if search_db(cursor, qry, verbose=verbose): return False
 			var_id = hard_landing_search(cursor, "select max(id) from variants")[0][0]
 			# return False
@@ -214,11 +221,14 @@ def store_variant_w_known_cdna(cursor, cdna_var, protein_var, var_ids, verbose):
 
 	else:
 		#  this is a new entry
-		if verbose: print(f"storing {cdna_var} {protein_var}")
-		if len(nt_from) > 10: nt_from = nt_from[:5] + "..." + nt_from[-5:]
-		if len(nt_to) > 10: nt_to = nt_to[:5] + "..." + nt_to[-5:]
+		if verbose: print(f"storing {cdna_var} {protein_var}  {nt_from}  {nt_to}")
+		nt_from_cpl = Seq(nt_from).reverse_complement() if type(nt_from)==str else nt_from
+		nt_to_cpl = Seq(nt_to).reverse_complement() if type(nt_to)==str else nt_to
+
+		if len(nt_from_cpl) > 10: nt_from_cpl = nt_from_cpl[:5] + "..." + nt_from_cpl[-5:]
+		if len(nt_to_cpl) > 10: nt_to_cpl = nt_to_cpl[:5] + "..." + nt_to_cpl[-5:]
 		qry = "insert into variants (gdna_start, gdna_end, mod_type, nt_from, nt_to, cdna, protein) "
-		qry += f"values ({gdna_start}, {gdna_end}, '{mod_type}', '{nt_from}', '{nt_to}', '{cdna_var}', '{protein_var}')"
+		qry += f"values ({gdna_start}, {gdna_end}, '{mod_type}', '{nt_from_cpl}', '{nt_to_cpl}', '{cdna_var}', '{protein_var}')"
 
 		if search_db(cursor, qry, verbose=verbose): return False
 		var_ids.append(hard_landing_search(cursor, "select max(id) from variants")[0][0])
@@ -263,6 +273,7 @@ def store_variants(cursor, c, p, verbose=False):
 		exit()
 	return var_ids
 
+
 #########################################
 def store_allele(cursor, variant_ids):
 	allele_id = None
@@ -277,6 +288,7 @@ def store_allele(cursor, variant_ids):
 	else:
 		allele_id = ret[0][0]
 	return allele_id
+
 
 #########################################
 def store_publication(cursor, pubmed_id, reference):
