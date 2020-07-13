@@ -3,7 +3,7 @@
 import os, re, subprocess
 
 from utils.mysql import *
-
+from utils.structure import *
 
 #########################################
 def main():
@@ -15,9 +15,9 @@ def main():
 		if not pattern:
 			print(protein)
 			continue
-		aa = pattern.group(1)
+		aa  = pattern.group(1)
 		pos = pattern.group(2)
-		print(id, protein, aa, pos)
+		print(id, protein, aa, pos, find_region(int(pos)))
 	cursor.close()
 	db.close()
 

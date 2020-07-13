@@ -81,7 +81,7 @@ def main():
 	workbook = xlsxwriter.Workbook('abca4_genphen.xlsx')
 	xlsx_format = {"header":workbook.add_format({'align': 'center',  'valign': 'vcenter', 'bold': True, 'text_wrap': True}),
 	               "wordwrap":workbook.add_format({'align': 'left', 'text_wrap': True}),
-					"hyperlink":workbook.add_format({'align': 'center', 'color': 'blue', 'underline': 1, 'valign': 'vcenter'})}
+				   "hyperlink":workbook.add_format({'align': 'center', 'color': 'blue', 'underline': 1, 'valign': 'vcenter'})}
 	table_creator(cursor, workbook, xlsx_format)
 	workbook.close()
 
