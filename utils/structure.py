@@ -21,7 +21,7 @@ other_phenotype_color = {"FFM" : "slate",  "ARMD2" : "pink", "CORD3" :  "sand",
 						"gnomad100"   : "gray", "gnomad1000" : "palegreen"}
 
 region_range = {"tmd1":[[1, 45], [645, 870]] , "tmd2":[[1340, 1395], [1665, 1905]],
-				"Rdomain":[[1141, 1271], [2161, 2260]],
+				"R":[[1141, 1271], [2161, 2260]],
 				"nbd1":[[960, 1140]]  , "nbd2":[[1940, 2160]],
 				"ecd1":[[50,  335], [365,  640]], "ecd2":[[1405, 1660]]}
 
@@ -33,9 +33,9 @@ def find_region(res):
 		for [rfrom, rto] in ranges:
 			if rmin>rfrom: rmin = rfrom
 			if rmax<rto: rmax = rto
-			if rfrom<=res<=rto: return name
-	if res<rmin: return "Nterm"
-	if res>rmax: return "Cterm"
+			if rfrom<=res<=rto: return name.upper()
+	if res<rmin: return "N-term"
+	if res>rmax: return "C-term"
 	return "linker"
 
 region_range_pymol = {"tmd1":["resi 1-45","resi 645-870"], "tmd2":["resi 1340-1395","resi 1665-1905"],
@@ -43,7 +43,7 @@ region_range_pymol = {"tmd1":["resi 1-45","resi 645-870"], "tmd2":["resi 1340-13
 				"nbd1":["resi 960-1140"], "nbd2":["resi 1940-2160"],
 				"ecd1":["resi 50-335","resi 365-640"], "ecd2":["resi 1405-1660"]}
 
-region_color = {"tmd1":"blue", "tmd2":"green", "Rdomain":"grey",
+region_color = {"tmd1":"blue", "tmd2":"green", "R":"grey",
 				"nbd1":"yellow", "nbd2":"magenta", "ecd1":"cyan", "ecd2":"orange"}
 
 home_view = "  -0.002808416,   -0.999822557,    0.018627511,\

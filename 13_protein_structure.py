@@ -10,14 +10,17 @@ def main():
 
 	db, cursor = abca4_connect()
 
-	for [id, protein] in hard_landing_search(cursor, "select id, protein from variants"):
+	for [variant_id, protein] in hard_landing_search(cursor, "select id, protein from variants"):
 		pattern = re.match('(\D+)(\d+)\D', protein)
 		if not pattern:
 			print(protein)
 			continue
 		aa  = pattern.group(1)
 		pos = pattern.group(2)
-		print(id, protein, aa, pos, find_region(int(pos)))
+		structural_domain = find_region(int(pos))
+		print(variant_id, protein, aa, pos, structural_domain)
+		qry = f"update variants set protein_domain='{structural_domain}' where id={variant_id}"
+		error_intolerant_search(cursor, qry)
 	cursor.close()
 	db.close()
 
