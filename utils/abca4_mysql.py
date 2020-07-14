@@ -23,17 +23,22 @@ def variants_from_allele(cursor, allele_id):
 	qry = f"select variant_ids from alleles where id = {allele_id}"
 	var_ids = [v[1:-1].split("-") for v in hard_landing_search(cursor, qry)[0]]
 	for vi in var_ids:
-		qry  = "select cdna, protein, gnomad_freq, gnomad_homozygotes, protein_domain "
+		qry  = "select cdna, protein, gnomad_freq, gnomad_homozygotes, protein_domain, conserved_in_ortho "
 		qry += f"from variants where id in ({','.join(vi)})"
 		cdna = []
 		protein = []
 		freqs = []
 		homozygs = []
 		regions = []
-		for [c, p, f, h, r] in hard_landing_search(cursor, qry):
+		conserved = []
+		for [c, p, f, h, r, cons] in hard_landing_search(cursor, qry):
 			cdna.append(f"c.{c}" if c else "np")
 			protein.append(f"p.{p}")
 			freqs.append(human_readble(f))
 			homozygs.append(str(h) if h else "0")
 			regions.append(r if r and not "ter" in p.lower() else "none")
-	return "; ".join(cdna), "; ".join(protein), "; ".join(freqs), "; ".join(homozygs), "; ".join(regions)
+			conserved.append("Y" if cons and cons==1 else "n")
+
+	ret = ["; ".join(cdna), "; ".join(protein), "; ".join(freqs)]
+	ret.extend(["; ".join(homozygs), "; ".join(regions), ";".join(conserved)])
+	return  ret
