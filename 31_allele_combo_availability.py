@@ -58,9 +58,21 @@ def is_null(cdna, prot, filter):
 	if "del" in filter and is_del(cdna, prot): return True
 	if "splice" in filter and is_splice(cdna, prot): return True
 	if "exotic" in filter and is_exotic(cdna, prot): return True
-	if "misfolder" in filter and is_misfolder(cdna, prot): return True
+	# if "misfolder" in filter and is_misfolder(cdna, prot): return True
 	return False
 
+def characterize(cdna, prot, homozygs, regions, cons):
+	if is_null(cdna, prot, "ter|splice|del|exotic"): return "null"
+
+	homs = homozygs.split(";")
+	if len(homs)==1 and int(homs[0].strip())>1: return "homozg"
+
+	regs =  regions.split(";")
+	if len(regs)==1:
+		#if cons=="n": return None
+		for domain in ["nbd", "tm", "ecd"]:
+			if domain in regs[0].lower(): return domain
+	return None
 
 #########################################
 def main():
@@ -72,9 +84,9 @@ def main():
 	bins = []
 	for b in range(number_of_bins):
 		bins.append(b*bin_size+0.1)
-	filters = ["ter", "splice", "del", "exotic",  "ter|splice|del|exotic"]
-	age_set  = {"all":[]}
-	for name in filters: age_set[name] = []
+
+	allele_type = ["null", "nbd", "tm", "ecd", "homozg"]
+	ages = {}
 	qry = "select allele_id_1, allele_id_2, publication_id, patient_xref_id, onset_age, progression from cases"
 	for case in hard_landing_search(cursor, qry):
 		[allele_id_1, allele_id_2, publication_id, patient_xref_id, onset_age, progression] = case
@@ -82,26 +94,37 @@ def main():
 		[cdna2, prot2, freqs2, homozygs2, region2, cons2] = variants_from_allele(cursor, allele_id_2)
 		if onset_age<0: continue # the onse age not given
 
-		age_set["all"].append(onset_age)
-		for fltr in filters:
-			if is_null(cdna1, prot1, fltr) and is_null(cdna2, prot2, fltr):
-				age_set[fltr].append(onset_age)
+		type1 = characterize(cdna1, prot1, homozygs1, region1, cons1)
+		type2 = characterize(cdna2, prot2, homozygs2, region2, cons2)
+		if not type1 or not type2: continue
+		key = " ".join(sorted([type1, type2]))
+		if not key  in ages: ages[key] = []
+		ages[key].append(onset_age)
 
-	cursor.close()
 	db.close()
 
+	tot = 0
+	for types, onset_ages in ages.items():
+		[type1, type2] = types.split()
+		ct = len(onset_ages)
+		tot += ct
+		print(f"{type1}  {type2}   {ct}")
+	print(tot)
+
 	rows = 3
-	cols = 3
+	cols = 5
 	fig, axs = plt.subplots(rows, cols)
 	fig.text(0.5, 0.04, 'onset age', ha='center')
 	fig.text(0.04, 0.5, 'number of patients', va='center', rotation='vertical')
-	age_set_names = ["all"] + filters
-	for n in range(len(age_set_names)):
-		name = age_set_names[n]
-		axs.flat[n].hist(age_set[name], bins)
-		axs.flat[n].legend([f"{name} ({len(age_set[name])})"])
+	all_type_pairs = list(ages.keys())
+	for n in range(min(rows*cols, len(all_type_pairs))):
+		name = all_type_pairs[n]
+		axs.flat[n].hist(ages[name], bins)
+		axs.flat[n].legend([f"{name} ({len(ages[name])})"])
 
-	axs.flat[rows * cols-1].hist(age_set["all"], bins, cumulative=True, histtype='step')
+	#axs.flat[rows * cols-1].hist(age_set["all"], bins, cumulative=True, histtype='step')
+
+	plt.show()
 
 
 
