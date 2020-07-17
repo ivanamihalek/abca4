@@ -3,18 +3,18 @@
 # To run from pymol itself, open pymol and find conservation_on_the_structure.pml
 # in the 'File'->'Run Script ...' dropdown menu.
 
-# If you do not have pymol installed, check 
+# If you do not have pymol installed, check
 # https://pymolwiki.org/index.php/Windows_Install
-# or the links for other platforms at the bottom of that page. 
+# or the links for other platforms at the bottom of that page.
 
-load abca4_swissmodel_on_5xjy.pdb, the_whole_thing
+load ../structure/abca4_swissmodel_w_nbd_substrate.pdb, the_whole_thing
 zoom complete=1
 bg_color white
 hide everything
-select chainA, the_whole_thing and chain A and polymer 
-color white,  chainA 
-show cartoon, chainA 
-show spheres, chainA 
+select chainA, the_whole_thing and chain A and polymer
+color white,  chainA
+show cartoon, chainA
+show spheres, chainA
 set_color c0 = [1, 0.83, 0.17]
 set_color c1 = [1, 0, 0]
 set_color c2 = [0.73, 0, 0]
@@ -2290,18 +2290,18 @@ color c15, resid 877 and chain A
 color c7, resid 835 and chain A
 color c15, resid 2190 and chain A
 color c12, resid 1553 and chain A
-select heteroatoms,  hetatm and not solvent 
-select other_chains, not chain A 
-select struct_water, solvent and chain A 
+select heteroatoms,  hetatm and not solvent
+select other_chains, not chain A
+select struct_water, solvent and chain A
 select metals, symbol  mg+ca+fe+zn+na+k+mn+cu+ni+cd+i
-cartoon putty 
-show  cartoon,  other_chains 
-hide  spheres,   heteroatoms 
-show  sticks,   heteroatoms 
-show  spheres,  struct_water 
-show  spheres,  metals 
-color palecyan, struct_water 
-color lightteal, other_chains or heteroatoms 
+cartoon putty
+show  cartoon,  other_chains
+hide  spheres,   heteroatoms
+show  sticks,   heteroatoms
+show  spheres,  struct_water
+show  spheres,  metals
+color palecyan, struct_water
+color lightteal, other_chains or heteroatoms
 color magenta, metals
 zoom  chain A
 select poorly_scoring, resid 219+256+1607+1604+2116+887+726+1187+1184+1430+1786
@@ -2407,4 +2407,4 @@ select poorly_scoring, poorly_scoring or resid 896+1130+1873+961+1084+1487+236+4
 select poorly_scoring, poorly_scoring or resid 943+1652+8+2166+721+1274+1431+312+1212+877+2190
 select poorly_scoring, poorly_scoring or resid 1553
 select poorly_scoring, poorly_scoring and chainA
-deselect 
+deselect
