@@ -7,7 +7,7 @@ from utils.annotation import single_letter_code
 
 
 # store to table - the variant columns are tinyints called  conserved_in_ortho and conserved_in_para
-def read_specs(infile):
+def read_specs(infile, cutoff):
 	if not os.path.exists(infile):
 		print(infile, "not found")
 		exit()
@@ -21,18 +21,16 @@ def read_specs(infile):
 			header = line.strip().split()[1:]
 		else:
 			named_field = dict(zip(header,line.strip().split()))
-			if float(named_field["rvet"])<0.22:
+			if float(named_field["rvet"])<cutoff:
 				cons[int(named_field["pos_in_human"])] = named_field["human"]
 
 	inf.close()
 
 	return cons
 
-#########################################
-def main():
 
-	db, cursor = abca4_connect()
-	cons = read_specs("conservation/specs_out.score")
+def fill_column(cursor, filename, column, cutoff):
+	cons = read_specs(filename, cutoff)
 
 	for [variant_id, protein] in hard_landing_search(cursor, "select id, protein from variants"):
 		pattern = re.match('(\D+)(\d+)\D', protein)
@@ -45,8 +43,17 @@ def main():
 			print(variant_id, protein, aa, pos, conserved,  "mismatch")
 			exit()
 		print(variant_id, protein, aa, pos, cons.get(pos, "not conserved"))
-		qry = f"update variants set conserved_in_ortho=1 where id={variant_id}"
+		qry = f"update variants set {column}=1 where id={variant_id}"
 		error_intolerant_search(cursor, qry)
+
+
+#########################################
+def main():
+
+	db, cursor = abca4_connect()
+	fill_column(cursor, "conservation/vertebrates_only/specs_out.score", "conserved_in_ortho_verts", 0.40)
+	fill_column(cursor, "conservation/verts_insects/specs_out.score", "conserved_in_verts_insects", 0.16)
+
 	cursor.close()
 	db.close()
 

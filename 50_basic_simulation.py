@@ -8,6 +8,8 @@ def main ():
 
 
 	# the values for one case/patient
+	# alpha is the abilty to fold and incorporate
+	# "fraction" refers to the fraction of the wild-type capability
 	alpha_fraction = [0.3, 0.3]
 	transport_efficiency = [1.0, 0.5]
 	max_age = 80

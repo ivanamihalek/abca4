@@ -61,8 +61,8 @@ CREATE TABLE `variants`(
   -- null refers to no protein product
   -- ? means unknown
   -- [membrane, splicing, folding, transport]: impaired [membrane incorporation, splicing, folding, payload transport]
-  `conserved_in_ortho` tinyint,
-  `conserved_in_para` tinyint,
+  `conserved_in_ortho_verts` tinyint,
+  `conserved_in_verts_insects` tinyint,
   `systems_effect` ENUM ('null', 'unk', 'membrane', 'splicing', 'folding', 'transport') default 'unk'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -76,3 +76,14 @@ CREATE TABLE `publications` (
    `pubmedcentral`    varchar(20),
    `other_xref` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `parametrization`;
+CREATE TABLE `parametrization` (
+   `id` mediumint(9) NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
+   `variant_id`  mediumint(9),
+   `expression_folding_membrane_incorporation` float,
+   `transport_efficiency`   float,
+   `notes` text
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
