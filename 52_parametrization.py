@@ -161,10 +161,3 @@ def main():
 if __name__ == '__main__':
 	main()
 
-'''
-for each variant assign initial parametrization (folding and transport efficiency)
-then run simulation for the initial parametrization and see how far off we are from the reported acuity of vision
-does my cire sim represent a single day?
-read in our patients to the database
-
-'''

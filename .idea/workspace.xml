@@ -2,25 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3bac899b-291d-4212-9723-444346ec6ed7" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/52_parametrization.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/54_parametrization_consistency.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_abca4_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/01_abca4_schema.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/15_conservation.py" beforeDir="false" afterPath="$PROJECT_DIR$/15_conservation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/33_onset_age_distribution.py" beforeDir="false" afterPath="$PROJECT_DIR$/33_onset_age_distribution.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/50_basic_simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/50_basic_simulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/ABCA147.afa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/ABCA4.orthos.afa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/conservation_on_the_sequence.xls" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/conservation_on_the_structure.pml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/insects_refseq.fasta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/insects_refseq.orig_headers.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/specs_out.patched.afa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/specs_out.patchlog" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/specs_out.score" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/verts.selection.afa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/verts_insects.afa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conservation/verts_insects_abca147.afa" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/52_parametrization.py" beforeDir="false" afterPath="$PROJECT_DIR$/52_parametrization.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -31,38 +16,35 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="52_parametrization.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/52_parametrization.py">
+      <file leaf-file-name="54_parametrization_consistency.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/54_parametrization_consistency.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="648">
-              <caret line="153" lean-forward="true" selection-start-line="153" selection-end-line="153" />
+              <caret line="36" column="38" selection-start-line="36" selection-start-column="38" selection-end-line="36" selection-end-column="38" />
               <folding>
-                <element signature="e#20#45#0" expanded="true" />
+                <element signature="e#21#46#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utils.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/utils.py">
+      <file leaf-file-name="abca4_mysql.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/abca4_mysql.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="284">
-              <caret line="30" column="4" selection-start-line="30" selection-start-column="4" selection-end-line="30" selection-end-column="4" />
+            <state relative-caret-position="332">
+              <caret line="21" column="4" selection-start-line="21" selection-start-column="4" selection-end-line="21" selection-end-column="4" />
               <folding>
-                <element signature="e#1#22#0" expanded="true" />
+                <element signature="e#1#26#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="15_conservation.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/15_conservation.py">
+      <file leaf-file-name="33_onset_age_distribution.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/33_onset_age_distribution.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="324">
-              <caret line="18" column="22" lean-forward="true" selection-start-line="18" selection-start-column="22" selection-end-line="18" selection-end-column="22" />
-              <folding>
-                <element signature="e#20#45#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="54">
+              <caret line="5" lean-forward="true" selection-start-line="4" selection-end-line="5" />
             </state>
           </provider>
         </entry>
@@ -122,17 +104,18 @@
         <option value="$PROJECT_DIR$/52_simulation.py" />
         <option value="$PROJECT_DIR$/utils/simulation.py" />
         <option value="$PROJECT_DIR$/50_basic_simulation.py" />
-        <option value="$PROJECT_DIR$/33_onset_age_distribution.py" />
         <option value="$PROJECT_DIR$/01_abca4_schema.sql" />
         <option value="$PROJECT_DIR$/15_conservation.py" />
         <option value="$PROJECT_DIR$/utils/utils.py" />
         <option value="$PROJECT_DIR$/52_parametrization.py" />
+        <option value="$PROJECT_DIR$/33_onset_age_distribution.py" />
+        <option value="$PROJECT_DIR$/54_parametrization_consistency.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="2077" />
-    <option name="y" value="14" />
+    <option name="x" value="2287" />
+    <option name="y" value="10" />
     <option name="width" value="1553" />
     <option name="height" value="1038" />
   </component>
@@ -245,17 +228,10 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="5" />
+      <option name="time" value="6" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/11_gnomad.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="504">
-          <caret line="30" lean-forward="true" selection-start-line="30" selection-end-line="30" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/38_xlsx_creator.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1026">
@@ -295,6 +271,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="342">
           <caret line="19" selection-start-line="17" selection-end-line="19" />
+          <folding>
+            <element signature="e#522#531#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -444,6 +423,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="702">
           <caret line="144" selection-start-line="143" selection-end-line="144" />
+          <folding>
+            <element signature="e#522#531#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -504,40 +486,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils/abca4_mysql.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="25" column="105" selection-start-line="25" selection-start-column="105" selection-end-line="25" selection-end-column="105" />
-          <folding>
-            <element signature="e#1#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/31_allele_combo_availability.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-208">
           <caret line="71" column="9" selection-start-line="71" selection-start-column="9" selection-end-line="71" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/simulation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="62" selection-start-line="62" selection-end-line="62" />
-          <folding>
-            <element signature="e#20#40#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/50_basic_simulation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="11" column="67" selection-start-line="11" selection-start-column="67" selection-end-line="11" selection-end-column="67" />
-          <folding>
-            <element signature="e#24#68#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -568,13 +520,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/33_onset_age_distribution.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-172">
-          <caret line="3" column="26" lean-forward="true" selection-start-line="3" selection-end-line="3" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/01_abca4_schema.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
@@ -602,12 +547,56 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/utils/simulation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-118">
+          <caret line="62" selection-start-line="62" selection-end-line="62" />
+          <folding>
+            <element signature="e#20#40#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/50_basic_simulation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="11" column="67" selection-start-line="11" selection-start-column="67" selection-end-line="11" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/52_parametrization.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="648">
-          <caret line="153" lean-forward="true" selection-start-line="153" selection-end-line="153" />
+        <state relative-caret-position="404">
+          <caret line="129" lean-forward="true" selection-start-line="129" selection-end-line="129" />
           <folding>
             <element signature="e#20#45#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/33_onset_age_distribution.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="5" lean-forward="true" selection-start-line="4" selection-end-line="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/abca4_mysql.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="332">
+          <caret line="21" column="4" selection-start-line="21" selection-start-column="4" selection-end-line="21" selection-end-column="4" />
+          <folding>
+            <element signature="e#1#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/54_parametrization_consistency.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="648">
+          <caret line="36" column="38" selection-start-line="36" selection-start-column="38" selection-end-line="36" selection-end-column="38" />
+          <folding>
+            <element signature="e#21#46#0" expanded="true" />
           </folding>
         </state>
       </provider>

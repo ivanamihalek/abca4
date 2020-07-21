@@ -22,9 +22,9 @@ def main():
 	qry = "select allele_id_1, allele_id_2, publication_id, patient_xref_id, onset_age, progression from cases"
 	for case in hard_landing_search(cursor, qry):
 		[allele_id_1, allele_id_2, publication_id, patient_xref_id, onset_age, progression] = case
+		if onset_age<0: continue # the onse age not given
 		[cdna1, prot1, freqs1, homozygs1, region1, cons1] = variants_from_allele(cursor, allele_id_1)
 		[cdna2, prot2, freqs2, homozygs2, region2, cons2] = variants_from_allele(cursor, allele_id_2)
-		if onset_age<0: continue # the onse age not given
 
 		age_set["all"].append(onset_age)
 		for fltr in filters:
