@@ -63,6 +63,7 @@ def annotate_by_cons(cons_data, protein, protein_domain):
 	return [expression, transport, notes]
 
 
+
 #########################################
 def main():
 
@@ -83,17 +84,36 @@ def main():
 		protein = named_field["protein"]
 		cdna = named_field["cdna"]
 		pd = named_field["protein_domain"]
+		homozygotes =  named_field["gnomad_homozygotes"]
 		# initial guess: both factors unaffected
 		[expression, transport, notes] = [1.0, 1.0, ""]
-		if "fs" in protein:
-			expression = 0.0
-			notes = "null: fs"
+
+		# first let's get some exceptinal cases out of the way
+		# the experiment says this is a misfolder, but deos not seem to be
+		if 'Leu2027Phe' in protein:
+			expression = 0.75
+			notes = "mild expression: misfolder"
+		elif 'Arg2030Gln' in protein:
+			expression = 0.75
+			notes = "mild expression: from data"
+		############################################
+		elif "fs" in protein:
+			if may_escape_NMD(cdna, protein):
+				expression = 0.5
+				notes = "strong expression: escapes NMD"
+			else:
+				expression = 0.0
+				notes = "null: fs"
 		elif is_splice(cdna, protein):
 			expression = 0.0
 			notes = "null: near splice"
 		elif is_ter(cdna, protein):
-			expression = 0.0
-			notes = "null: early stop"
+			if may_escape_NMD(cdna, protein):
+				expression = 0.5
+				notes = "strong expression: escapes NMD"
+			else:
+				expression = 0.0
+				notes = "null: early stop"
 		elif is_del(cdna, protein):
 			expression = 0.0
 			notes = "null: del"
@@ -101,8 +121,8 @@ def main():
 			expression = 0.25
 			notes = "severe expression: exotic"
 		elif is_misfolder(cdna, protein):
-			expression = 0.0
-			notes = "null: misfolder"
+			expression = 0.25
+			notes = "severe expression: misfolder"
 			#print(protein, "misfolder ===>", named_field["conserved_in_verts_insects"])
 
 		elif is_distant_splice(cdna, protein):
@@ -127,8 +147,12 @@ def main():
 			notes = "suspicious: synonymous"
 
 		elif named_field["conserved_in_verts_insects"]==1:
-			expression = 0.25
-			notes = "severe expression: cons in para"
+			if homozygotes and homozygotes>1:
+				expression = 0.5
+				notes = "strong expression: cons in para but homozygotes exist"
+			else:
+				expression = 0.25
+				notes = "severe expression: cons in para"
 
 		elif named_field["conserved_in_ortho_verts"]==1:
 			if pd in ["NBD1", "NBD2"]:

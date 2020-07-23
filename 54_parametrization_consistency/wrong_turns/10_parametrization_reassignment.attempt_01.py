@@ -4,7 +4,7 @@ from utils.mysql import *
 from utils.abca4_mysql import  *
 from math import sqrt
 from random import random
-from statistics import mean, stdev
+import copy
 
 def variant_info(cursor, allele_id):
 	qry = f"select variant_ids from alleles where id={allele_id}"
@@ -49,7 +49,7 @@ def read_in_values():
 
 		age[case_id] = onset_age
 
-	cursor.close()
+
 	db.close()
 
 	# for case_id, varids in case_variants.items():
@@ -106,50 +106,78 @@ def tweak(zero2four):
 	return zero2four-1
 
 
+##########
+def sim_loop(case_variants, age, orig_variant_parameters):
+	case_id = list(case_variants.keys())
+	number_of_cases = len(case_id)
+
+	# variants which we know are null at the start stay null
+	# some variants may become null during simulation, and
+	# we want to distiguish the two
+	# (but we do want the sitance sum using these fixed variants)
+	fixed = {}
+	for v, prms in orig_variant_parameters.items():
+		fixed[v] = "0_" in prms
+
+	variant_parameters = copy.deepcopy(orig_variant_parameters)
+
+	# pull the original nulls to the new set
+	dist_prev = rmsd_age_distance(case_variants, age, variant_parameters, case_id, number_of_cases)
+	print("%2.0f"%dist_prev)
+	T = 1
+	for pass_number in range(2):
+		for v, prms in variant_parameters.items():
+			if fixed[v]: continue # we do not change the null variants
+			[e_prev, t_prev] =[int(i) for i in prms.split("_")]
+			if random()<0.5:
+				e = tweak(e_prev)
+				t = t_prev
+			else:
+				e = e_prev
+				t = tweak(t_prev)
+			variant_parameters[v] = f"{e}_{t}"
+			dist = rmsd_age_distance(case_variants, age, variant_parameters, case_id, number_of_cases)
+			if dist<dist_prev:
+				# accept
+				dist_prev = dist
+			else:
+				# backpedal
+				variant_parameters[v] = f"{e_prev}_{t_prev}"
+
+		print("%2d     %.2f"%(pass_number+1, dist_prev))
+
+	return variant_parameters
+
 ##############
-def distros(case_variants, age, variant_parameters):
-
-	db, cursor = abca4_connect()
-
+def plot_distros(case_variants, age, variant_parameters):
 	age_list = {}
-	cases_by_label = {}
 	for case_id, vars in case_variants.items():
-		label = " | ".join(sorted([variant_parameters[v] for v in vars]))
-		if not label in age_list:
-			age_list[label] = []
-			cases_by_label[label] = []
-		age_list[label].append(age[case_id])
-		cases_by_label[label].append(case_id)
 
+		label = " | ".join(sorted([variant_parameters[v] for v in vars]))
+		if not label in age_list: age_list[label] = []
+		age_list[label].append(age[case_id])
 
 	labels_sorted = sorted(age_list.keys())
 	for label in labels_sorted:
 		agelist  = age_list[label]
-		m = mean(agelist)
-		s = stdev(agelist) if len(agelist)>1 else 0
-		print(label, "       %2.0f     %2.0f"%(m, s),  "      ", sorted(agelist))
-		if s>0:
-			outlayers = set(filter(lambda x: abs(x-m)/s>3, agelist))
-			for onset_age in outlayers:
-				case_ids = list(filter(lambda case_id: age[case_id]==onset_age, cases_by_label[label]))
-				for cid in case_ids:
-					print("\t\t ", onset_age, cid)
-					for vid in case_variants[cid]:
-						qry  = "select cdna, protein, gnomad_homozygotes, conserved_in_ortho_verts, conserved_in_verts_insects "
-						qry += f"from variants where id={vid}"
-						print("\t\t\t", hard_landing_search(cursor, qry)[0])
-		print()
-		# exit()
-
+		dist = rmsd_distance_any(agelist)
+		print(label, "       %2.0f     %2.0f"%(sum(agelist)/len(agelist), dist),  "      ", sorted(agelist))
 	print(f"number of labels {len(age_list)}")
-	cursor.close()
-	db.close()
 
 #########################################
 def main():
 
 	[case_variants, age, variant_parameters] = read_in_values()
-	distros(case_variants, age, variant_parameters)
+	plot_distros(case_variants, age, variant_parameters)
+	exit()
+
+	new_variant_params = sim_loop(case_variants, age, variant_parameters)
+
+	plot_distros(case_variants, age, new_variant_params)
+
+	# for v, prms in variant_parameters.items():
+	# 	if prms != new_variant_params[v]:
+	# 		print(v, prms, new_variant_params[v])
 
 
 

@@ -3,16 +3,9 @@ from PIL import Image
 import os, re
 from utils.annotation import  single_letter_code
 from utils.structure import putative_salt_bridge_members
+from utils.abca4_gene import abca4_donor_splice
 
 #########################################
-
-def is_ter(cdna, prot):
-	if prot and "ter"in prot.lower(): return True
-	return False
-
-def is_del(cdna, prot):
-	if prot and "del"in prot.lower(): return True
-	return False
 
 def parse_protein(protein):
 	if not protein: return [None, None, None]
@@ -22,6 +15,27 @@ def parse_protein(protein):
 	pos = int(pattern.group(2))
 	aa_to = pattern.group(3).upper()
 	return [aa_from, pos, aa_to]
+
+def is_ter(cdna, prot):
+	if prot and "ter"in prot.lower(): return True
+	return False
+
+def may_escape_NMD(cdna, protein):
+	# this just checks 50-55 rule (does not check that the stop codon is actually generated)
+	last_splice_position = sorted(abca4_donor_splice.keys())[-1]
+	if cdna:
+		pattern = re.match('(\d+)\D', cdna.strip().replace("c.",""))
+		if not pattern: return False
+		pos = int(pattern.group(1))
+		if pos>last_splice_position-60: return True
+	if protein:
+		[aa_from, pos, aa_to]  = parse_protein(protein)
+		if pos*3 >last_splice_position-60: return True
+	return False
+
+def is_del(cdna, prot):
+	if prot and "del"in prot.lower(): return True
+	return False
 
 def is_missense(protein):
 	[aa_from, pos, aa_to] = parse_protein(protein)
