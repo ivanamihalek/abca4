@@ -1,3 +1,5 @@
+from utils.abca4_gene import get_protein
+
 structure_home = "/home/ivana/Dropbox/Anne/abca4/structure"
 
 pos_in_STGD1 = [1038,1488,818,407,765,1805,971,2077,607,1430,1408,1562,244,1843,68,1433,1898,1733,2263,1486,550,974,
@@ -24,6 +26,17 @@ region_range = {"tmd1":[[1, 45], [645, 870]] , "tmd2":[[1340, 1395], [1665, 1905
 				"R":[[1141, 1271], [2161, 2260]],
 				"nbd1":[[960, 1140]]  , "nbd2":[[1940, 2160]],
 				"ecd1":[[50,  335], [365,  640]], "ecd2":[[1405, 1660]]}
+
+
+putative_salt_bridge_members = [519, 370, 324, 75, 81, 54, 1488, 1502, 641, 2150, 1967, 2137, 2133]
+
+
+def check_salt():
+	seq = get_protein()
+	for res in putative_salt_bridge_members:
+		if seq[res-1]=='C': continue
+		print(f"res {res} in putative_salt_bridge_members does not seem to be a cysteine")
+		exit()
 
 
 def find_region(res):

@@ -23,7 +23,8 @@ CREATE TABLE `cases` (
   `onset_age` int,
   `acuity_type` varchar(50),
   `eye` ENUM ('better', 'average', 'both'),
-  `progression` text
+  `progression` text,
+  `notes` text,
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- we will store variant_ids as a string of alphabetically sorted ids joined by "-"

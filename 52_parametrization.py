@@ -42,20 +42,23 @@ def annotate_by_cons(cons_data, protein, protein_domain):
 		print(f"type mismatch for pos {pos}: {aa_from} vs {type_in_specs[pos]} in specs")
 		exit()
 	if aa_to in substitutions[pos]:
-		notes = "mild: substitution seen"
+		notes = "none: substitution seen"
 	else:
 		if protein_domain in ["NBD1", "NBD2"]:
-			transport = 0.70
-			notes = "transport: NBD, novel subs"
+			transport = 0.75
+			notes = "mild transport: NBD, novel subs"
 		elif protein_domain in ["TMD1", "TMD2"]:
 			transport = 0.50
-			notes = "transport: TMD, novel subs"
+			notes = "strong transport: TMD, novel subs"
 		elif protein_domain in ["ECD1", "ECD2"]:
-			transport = 0.90
-			notes = "transport: ECD, novel subs"
+			transport = 0.50
+			notes = "strong transport: ECD, novel subs"
+		elif protein_domain in ["R"]:
+			transport = 0.25
+			notes = "sever transport: R, novel subs"
 		else:
-			transport = 0.90
-			notes = f"transport: {protein_domain}, novel subs"
+			transport = 0.75
+			notes = f"mild transport: {protein_domain}, novel subs"
 
 	return [expression, transport, notes]
 
@@ -95,44 +98,62 @@ def main():
 			expression = 0.0
 			notes = "null: del"
 		elif is_exotic(cdna, protein):
-			expression = 0.0
-			notes = "null: exotic"
+			expression = 0.25
+			notes = "severe expression: exotic"
 		elif is_misfolder(cdna, protein):
 			expression = 0.0
 			notes = "null: misfolder"
 			#print(protein, "misfolder ===>", named_field["conserved_in_verts_insects"])
+
 		elif is_distant_splice(cdna, protein):
 			expression = 0.5
-			notes = "expression: distant splice"
+			notes = "strong expression: distant splice"
+
+		elif is_salt_bridge(protein):
+			if pd in ["NBD1", "NBD2"]:
+				transport = 0.50
+				notes = "strong transport: NBD, saltbridge"
+			elif pd in ["TMD1", "TMD2"]:
+				transport = 0.75 # we don's seem to have a salt bridge here
+				notes = "mild transport: TMD, saltbridge"
+			elif pd in ["ECD1", "ECD2"]:
+				transport = 0.25
+				notes = "severe transport: ECD, saltbridge"
+			else:
+				transport = 0.75 # here neither
+				notes = f"mild transport: {pd}, cons in ortho"
 
 		elif is_synonymous(protein):
 			notes = "suspicious: synonymous"
 
 		elif named_field["conserved_in_verts_insects"]==1:
-			expression = 0.0
-			notes = "null: cons in para"
+			expression = 0.25
+			notes = "severe expression: cons in para"
 
 		elif named_field["conserved_in_ortho_verts"]==1:
 			if pd in ["NBD1", "NBD2"]:
 				transport = 0.50
-				notes = "transport: NBD, cons in ortho"
+				notes = "strong transport: NBD, cons in ortho"
 			elif pd in ["TMD1", "TMD2"]:
 				transport = 0.25
-				notes = "transport: TMD cons in ortho"
+				notes = "severe transport: TMD cons in ortho"
 			elif pd in ["ECD1", "ECD2"]:
-				transport = 0.75
-				notes = "transport: ECD, cons in ortho"
+				transport = 0.25
+				notes = "severe transport: ECD, cons in ortho"
+			elif pd in ["R"]:
+				transport = 0.25
+				notes = "severe transport:  R cons in ortho"
 			else:
-				expression = 0.80
-				transport = 0.80
-				notes = f"expr and transp: {pd}, cons in ortho"
+				expression = 0.50
+				transport = 0.50
+				notes = f"strong expr and transp: {pd}, cons in ortho"
 
 
 		elif "ins" in protein or "del" in  protein or "dup" in protein:
 			if pd=="linker":
 				expression = 0.5
 				transport = 0.5
-				notes = "null: medium structural mod"
+				notes = "strong expr and transp: linker region mod"
 			else:
 				expression = 0.0
 				notes = "null: gross structural mod"

@@ -2,6 +2,7 @@
 from PIL import Image
 import os, re
 from utils.annotation import  single_letter_code
+from utils.structure import putative_salt_bridge_members
 
 #########################################
 
@@ -33,6 +34,22 @@ def is_synonymous(protein):
 	if not aa_from or not aa_to: return False
 	if aa_from==aa_to: return True
 	return False
+
+def is_salt_bridge(protein):
+	if not protein: return False
+	pattern = re.match('(\D{3})(\d+)(\D{3})', protein.strip().replace("p.",""))
+	if not pattern: return False
+
+	aa_from = pattern.group(1).upper()
+	if aa_from.upper()!="CYS": return False
+
+	pos = int(pattern.group(2))
+	if not pos in putative_salt_bridge_members: return False
+
+	aa_to = pattern.group(3).upper()
+	if aa_to.upper()=="CYS": return False
+
+	return True
 
 # this is not very reliable:
 # we have a case wiht two "misfolder" alleles that is over 40 at onset
