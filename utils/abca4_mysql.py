@@ -23,7 +23,7 @@ def variants_from_allele(cursor, allele_id):
 	qry = f"select variant_ids from alleles where id = {allele_id}"
 	var_ids = [v[1:-1].split("-") for v in hard_landing_search(cursor, qry)[0]]
 	for vi in var_ids:
-		qry  = "select cdna, protein, gnomad_freq, gnomad_homozygotes, protein_domain, conserved_in_ortho "
+		qry  = "select cdna, protein, gnomad_freq, gnomad_homozygotes, protein_domain, conserved_in_ortho_verts "
 		qry += f"from variants where id in ({','.join(vi)})"
 		cdna = []
 		protein = []

@@ -47,7 +47,7 @@ def main():
 
 	axs.flat[rows * cols-1].hist(age_set["all"], bins, cumulative=True, histtype='step')
 
-
+	plt.show()
 
 #########################################
 if __name__ == '__main__':

@@ -6,6 +6,8 @@ from math import sqrt
 from random import random
 from statistics import mean, stdev
 
+import matplotlib.pyplot as plt
+
 def variant_info(cursor, allele_id):
 	qry = f"select variant_ids from alleles where id={allele_id}"
 	variants = []
@@ -129,7 +131,7 @@ def distros(case_variants, age, variant_parameters):
 		s = stdev(agelist) if len(agelist)>1 else 0
 		print(label, "       %2.0f     %2.0f"%(m, s),  "      ", sorted(agelist))
 		if s>0:
-			outlayers = set(filter(lambda x: abs(x-m)/s>3, agelist))
+			outlayers = set(filter(lambda x: abs(x-m)/s>3 or x<10, agelist))
 			for onset_age in outlayers:
 				case_ids = list(filter(lambda case_id: age[case_id]==onset_age, cases_by_label[label]))
 				for cid in case_ids:
@@ -145,12 +147,85 @@ def distros(case_variants, age, variant_parameters):
 	cursor.close()
 	db.close()
 
+	return age_list
+
+
+
+def plot_all_distros(age_list):
+
+	number_of_bins = 75
+	bin_size = 1
+	bins = []
+	for b in range(number_of_bins):
+		bins.append(b*bin_size+0.1)
+
+	rows = 3
+	cols = 6
+	fig, axs = plt.subplots(rows, cols)
+	fig.text(0.5, 0.04, 'onset age', ha='center')
+	fig.text(0.04, 0.5, 'number of patients', va='center', rotation='vertical')
+
+	labels_sorted = sorted(age_list.keys())
+	n = -1
+	for label in labels_sorted:
+		agelist  = age_list[label]
+		if len(agelist)<5: continue
+		n += 1
+		if n>=rows*cols: break
+		name = label
+		axs.flat[n].hist(agelist, bins)
+		axs.flat[n].legend([f"{name} ({len(agelist)})"])
+
+	plt.show()
+
+
+
+def plot_distros_with_null(age_list):
+
+	number_of_bins = 75
+	bin_size = 1
+	bins = []
+	for b in range(number_of_bins):
+		bins.append(b*bin_size+0.1)
+
+	rows = 4
+	cols = 4
+	fig, axs = plt.subplots(rows, cols)
+	fig.text(0.5, 0.04, 'onset age', ha='center')
+	fig.text(0.04, 0.5, 'number of patients', va='center', rotation='vertical')
+
+	n = 0
+	label = f"0_4 | 0_4"
+	name = label
+	agelist = age_list[label]
+	axs.flat[n].hist(agelist, bins)
+	axs.flat[n].legend([f"{name} ({len(agelist)})"])
+
+	other_alleles =  [      "1_4", "2_4", "3_4",
+	                  "4_1",  "2_2" , "2_3",    "",
+	                  "4_2", "3_2", "3_3",    "",
+	                  "4_3",   "",    "",    "" ]
+
+	for other_allele in other_alleles:
+		n += 1
+		if n>=rows*cols: break
+		label = f"0_4 | {other_allele}"
+		print(label)
+		agelist = age_list.get(label, [])
+		name = label
+		axs.flat[n].hist(agelist, bins)
+		axs.flat[n].legend([f"{name} ({len(agelist)})"])
+
+
+	plt.show()
+
+
 #########################################
 def main():
 
 	[case_variants, age, variant_parameters] = read_in_values()
-	distros(case_variants, age, variant_parameters)
-
+	age_list = distros(case_variants, age, variant_parameters)
+	plot_distros_with_null(age_list)
 
 
 #########################################
