@@ -62,7 +62,34 @@ def annotate_by_cons(cons_data, protein, protein_domain):
 
 	return [expression, transport, notes]
 
+exceptions = ['Leu2027Phe', 'Arg2030Gln', 'Arg602Gln', 'Asp1532Tyr']
 
+def exception_handle(protein):
+	[expression, transport, notes] = [1.0, 1.0, ""]
+
+	if 'Leu2027Phe' in protein:
+		# the experiment says this is a misfolder, but does not seem to be
+		expression = 0.75
+		notes = "mild expression: misfolder"
+	elif 'Arg2030Gln' in protein:
+		expression = 0.75
+		notes = "mild expression: from data"
+	elif 'Arg602Gln' in protein:
+		# 602 is and ECD1 position conserved in vertebrates
+		# accordingly  Arg602Trp is assgned no-transport value
+		# which corresponds t the observed onset range og 6-26 yrs in carrrier
+		# however Arg602Gln carriers  have onsets of 31, 38, 57
+		# the 31yr onset is a homozygote in this variant
+		transport = 0.50
+		notes = "strong transport: ECD1, from data"
+	elif 'Asp1532Tyr' in protein:
+		# 1532 is and ECD2 position conserved in vertebrates
+		# however Asp1532Tyr has only two cases, with onset  at 36 and 37
+		transport = 0.50
+		notes = "strong transport: ECD2, from data"
+
+
+	return [expression, transport, notes]
 
 #########################################
 def main():
@@ -89,13 +116,8 @@ def main():
 		[expression, transport, notes] = [1.0, 1.0, ""]
 
 		# first let's get some exceptinal cases out of the way
-		# the experiment says this is a misfolder, but deos not seem to be
-		if 'Leu2027Phe' in protein:
-			expression = 0.75
-			notes = "mild expression: misfolder"
-		elif 'Arg2030Gln' in protein:
-			expression = 0.75
-			notes = "mild expression: from data"
+		if protein in exceptions:
+			[expression, transport, notes] = exception_handle(protein)
 		############################################
 		elif "fs" in protein:
 			if may_escape_NMD(cdna, protein):
@@ -129,6 +151,7 @@ def main():
 			expression = 0.5
 			notes = "strong expression: distant splice"
 
+		############################################
 		elif is_salt_bridge(protein):
 			if pd in ["NBD1", "NBD2"]:
 				transport = 0.50
@@ -143,13 +166,18 @@ def main():
 				transport = 0.75 # here neither
 				notes = f"mild transport: {pd}, cons in ortho"
 
+
 		elif is_synonymous(protein):
 			notes = "suspicious: synonymous"
 
+		elif in_nucleotide_neighborhood(protein):
+			transport = 0.5
+			notes = "strong transport: in the nucleotide neighborhood"
+
 		elif named_field["conserved_in_verts_insects"]==1:
 			if homozygotes and homozygotes>1:
-				expression = 0.5
-				notes = "strong expression: cons in para but homozygotes exist"
+				expression = 0.75
+				notes = "mild expression: cons in para but homozygotes exist"
 			else:
 				expression = 0.25
 				notes = "severe expression: cons in para"
@@ -162,16 +190,14 @@ def main():
 				transport = 0.25
 				notes = "severe transport: TMD cons in ortho"
 			elif pd in ["ECD1", "ECD2"]:
-				transport = 0.25
-				notes = "severe transport: ECD, cons in ortho"
+				transport = 0.0
+				notes = "no transport: ECD, cons in ortho"
 			elif pd in ["R"]:
 				transport = 0.25
 				notes = "severe transport:  R cons in ortho"
 			else:
-				expression = 0.50
 				transport = 0.50
 				notes = f"strong expr and transp: {pd}, cons in ortho"
-
 
 		elif "ins" in protein or "del" in  protein or "dup" in protein:
 			if pd=="linker":

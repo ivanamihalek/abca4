@@ -130,8 +130,9 @@ def distros(case_variants, age, variant_parameters):
 		m = mean(agelist)
 		s = stdev(agelist) if len(agelist)>1 else 0
 		print(label, "       %2.0f     %2.0f"%(m, s),  "      ", sorted(agelist))
+		#if label == "1_4 | 1_4":
 		if s>0:
-			outlayers = set(filter(lambda x: abs(x-m)/s>3 or x<10, agelist))
+			outlayers = set(filter(lambda x: abs(x-m)/s>3, agelist))
 			for onset_age in outlayers:
 				case_ids = list(filter(lambda case_id: age[case_id]==onset_age, cases_by_label[label]))
 				for cid in case_ids:
@@ -150,6 +151,17 @@ def distros(case_variants, age, variant_parameters):
 	return age_list
 
 
+def label2name(label):
+	name = ""
+	vct = 0
+	for v in label.split(" | "):
+		vct +=1
+		[e, t] = ["%3d"%(25*int(i)) for i in  v.split("_")]
+		if e== "%3d"%0:
+			name  += f"var{vct}: null\n"
+		else:
+			name  += f"var{vct}: e={e}%  t={t}%\n"
+	return name
 
 def plot_all_distros(age_list):
 
@@ -159,8 +171,8 @@ def plot_all_distros(age_list):
 	for b in range(number_of_bins):
 		bins.append(b*bin_size+0.1)
 
-	rows = 3
-	cols = 6
+	rows = 5
+	cols = 4
 	fig, axs = plt.subplots(rows, cols)
 	fig.text(0.5, 0.04, 'onset age', ha='center')
 	fig.text(0.04, 0.5, 'number of patients', va='center', rotation='vertical')
@@ -172,12 +184,15 @@ def plot_all_distros(age_list):
 		if len(agelist)<5: continue
 		n += 1
 		if n>=rows*cols: break
-		name = label
+		name = label2name(label)
 		axs.flat[n].hist(agelist, bins)
-		axs.flat[n].legend([f"{name} ({len(agelist)})"])
+		#axs.flat[n].legend([f"{name} ({len(agelist)})"])
+		axs.flat[n].text(0.6, 0.75, f"{name}", horizontalalignment='center',
+		                 verticalalignment='center',  transform = axs.flat[n].transAxes)
+		axs.flat[n].axvline(x=5, color="red")
+		axs.flat[n].axvline(x=10, color="red")
 
 	plt.show()
-
 
 
 def plot_distros_with_null(age_list):
@@ -188,8 +203,8 @@ def plot_distros_with_null(age_list):
 	for b in range(number_of_bins):
 		bins.append(b*bin_size+0.1)
 
-	rows = 4
-	cols = 4
+	rows = 3
+	cols = 3
 	fig, axs = plt.subplots(rows, cols)
 	fig.text(0.5, 0.04, 'onset age', ha='center')
 	fig.text(0.04, 0.5, 'number of patients', va='center', rotation='vertical')
@@ -200,11 +215,12 @@ def plot_distros_with_null(age_list):
 	agelist = age_list[label]
 	axs.flat[n].hist(agelist, bins)
 	axs.flat[n].legend([f"{name} ({len(agelist)})"])
+	axs.flat[n].axvline(x=5, color="red")
+	axs.flat[n].axvline(x=10, color="red")
 
-	other_alleles =  [      "1_4", "2_4", "3_4",
-	                  "4_1",  "2_2" , "2_3",    "",
-	                  "4_2", "3_2", "3_3",    "",
-	                  "4_3",   "",    "",    "" ]
+	other_alleles =  [       "1_4", "2_4",
+	                  "4_1", "2_2", "3_4",
+	                  "4_2", "4_3", "3_3"]
 
 	for other_allele in other_alleles:
 		n += 1
@@ -213,9 +229,12 @@ def plot_distros_with_null(age_list):
 		print(label)
 		agelist = age_list.get(label, [])
 		name = label
+		axs.flat[n].ylim(0,10)
 		axs.flat[n].hist(agelist, bins)
-		axs.flat[n].legend([f"{name} ({len(agelist)})"])
-
+		#axs.flat[n].legend([f"{name} ({len(agelist)})"])
+		axs.flat[n].text(number_of_bins/2, 7, f"{name}")
+		axs.flat[n].axvline(x=5, color="red")
+		axs.flat[n].axvline(x=10, color="red")
 
 	plt.show()
 
@@ -225,8 +244,8 @@ def main():
 
 	[case_variants, age, variant_parameters] = read_in_values()
 	age_list = distros(case_variants, age, variant_parameters)
-	plot_distros_with_null(age_list)
-
+	# plot_distros_with_null(age_list)
+	plot_all_distros(age_list)
 
 #########################################
 if __name__ == '__main__':
