@@ -10,10 +10,10 @@ def main ():
 	# the values for one case/patient
 	# alpha is the abilty to fold and incorporate
 	# "fraction" refers to the fraction of the wild-type capability
-	alpha_fraction = [0.3, 0.3]
-	transport_efficiency = [1.0, 0.5]
+	alpha_fraction = [1.0, 1.0]
+	transport_efficiency = [0.5, 0.5]
 	max_age = 80
-	x, y  = progression_sim(max_age, alpha_fraction, transport_efficiency, verbose=False)
+	x, y  = progression_sim(max_age, alpha_fraction, transport_efficiency, verbose=True)
 
 	fig, ax = plt.subplots()
 	plt.ylim(0,1.1)

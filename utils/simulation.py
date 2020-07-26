@@ -39,6 +39,8 @@ We take there are two, and their ratio depends on the gene's ability to produce 
 alpha_wt = 0.05
 # beta  =  RPE decay parameter
 beta_wt  = 200
+rpe_baseline = 0.1
+max_steps = 100
 
 def progression_sim(max_age, alpha_fraction, transport_efficiency, verbose=False):
 
@@ -46,20 +48,27 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, verbose=False
 	y = {"throughput":[], "fraction_0":[], "fraction_1":[] , "rpe":[]}
 	beta = beta_wt
 	alpha = [alpha_wt*alpha_fraction[0], alpha_wt*alpha_fraction[1]]
-
+	throughput = 1
+	rpe = 1
 	for age in range(max_age):
 		# we shouldn't divide by 0
-		rpe = exp(-(age/beta)**2)
+		f = exp(-(age/beta)**2)
+		rpe =2*f/(1+f)
+		#rpe = f
+
 		delivery_rate = [alpha[0]*rpe, alpha[1]*rpe]
 		fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
 		throughput = fraction[0]*transport_efficiency[0] + fraction[1]*transport_efficiency[1]
 		beta *= (0.5 + 0.5*throughput)
+
 		if verbose: print("%2d"%age, ["%.2f"%f for f in fraction], "throughput: %.2f"%throughput)
 		x.append(age)
 		y["throughput"].append(throughput)
 		y["fraction_0"].append(fraction[0])
 		y["fraction_1"].append(fraction[1])
-		y["rpe"].append(rpe)
+		# rescale rpe to have some baseline
+
+		y["rpe"].append(0.1+0.9*rpe)
 
 	return x, y
 
@@ -73,7 +82,6 @@ def sim_core (delivery_rate, plot=False, verbose=False):
 	delta = [1.0]*number_of_populations
 	points = []
 	not_incorporated = [0.0]*number_of_populations
-	max_steps = 100
 	step = 0
 	total_fraction_occupied  = 0
 
@@ -95,7 +103,7 @@ def sim_core (delivery_rate, plot=False, verbose=False):
 	if verbose:
 		print(f"loop exited after {max_steps}")
 		print("sum delta %.1e  total frac occupied %.3f"%(sum(delta), total_fraction_occupied))
-
+		print()
 	if plot:
 		x = np.linspace(0, 1, len(points))
 		y0 = [f[0] for f in points]

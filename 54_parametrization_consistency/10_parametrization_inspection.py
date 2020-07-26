@@ -29,7 +29,9 @@ def round_to_4(floatnum):
 def read_in_values():
 	db, cursor = abca4_connect()
 	qry  = "select id, allele_id_1, allele_id_2,  onset_age from cases "
-	qry += "where onset_age>0 and (notes is null or notes not like '%caveat%')"
+	qry += "where onset_age>0 and (notes is null or notes not like '%caveat%') "
+	# we don't want to parametrize on our own cases, bu they are already filtered out because they do not contain the onset age
+	# (the onset age is set to -1)
 	age = {}
 	case_variants = {}
 	variant_parameters = {}
@@ -132,7 +134,7 @@ def distros(case_variants, age, variant_parameters):
 		print(label, "       %2.0f     %2.0f"%(m, s),  "      ", sorted(agelist))
 		#if label == "1_4 | 1_4":
 		if s>0:
-			outlayers = set(filter(lambda x: abs(x-m)/s>3, agelist))
+			outlayers = set(filter(lambda x: abs(x-m)/s>3 or x<6, agelist))
 			for onset_age in outlayers:
 				case_ids = list(filter(lambda case_id: age[case_id]==onset_age, cases_by_label[label]))
 				for cid in case_ids:

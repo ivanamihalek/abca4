@@ -220,8 +220,7 @@ def main():
 		print("\t", expression, transport, notes)
 		store_or_update(cursor, 'parametrization', fixed_fields={"variant_id":named_field["id"]},
 		                update_fields={"expression_folding_membrane_incorporation":expression,
-		                               "transport_efficiency":transport,
-		                               "notes": notes})
+		                               "transport_efficiency":transport, "notes": notes})
 
 	print(total, annotated)
 	cursor.close()

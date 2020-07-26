@@ -60,7 +60,7 @@ def main():
 		if "Ter" in vars[0][1] and "Ter" in vars[1][1] and onset_age>15:
 			notes.append("caveat: late onset for double null")
 		if notes:
-			notestring = ";".join(notes)
+			notestring = "; ".join(notes)
 			qry = f"update cases set notes='{notestring}' where id={case_id}"
 			print(qry)
 			error_intolerant_search(cursor, qry)
