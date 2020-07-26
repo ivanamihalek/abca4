@@ -24,6 +24,7 @@ def parse_in(in_tsv):
 	return cases
 
 
+###########################################################
 sorted_exon_bdries = sorted(abca4_cdna2gdna.keys())
 
 
@@ -111,7 +112,7 @@ def parse_cdna(cdna_var):
 		mod_type = "sub"
 		pattern = re.match('([\d\-+]+)(\D)>(\D)', cdna_var)
 		if not pattern:
-			print(f"!! {cdna_var}")
+			print(f"!!  in parse cdna: {cdna_var}")
 			exit()
 		pos_from = pattern.group(1)
 		mod_from = pattern.group(2)
@@ -291,7 +292,8 @@ def store_allele(cursor, variant_ids):
 
 
 #########################################
-def store_publication(cursor, pubmed_id, reference):
+def store_publication_by_pubmed_id(cursor, pubmed_id, reference):
+
 	publication_id = None
 	ret = error_intolerant_search(cursor, f"select id from publications where pubmed={pubmed_id}")
 	if not ret:
@@ -303,6 +305,31 @@ def store_publication(cursor, pubmed_id, reference):
 	else:
 		publication_id = ret[0][0]
 	return publication_id
+
+
+####
+def store_publication_by_reference(cursor, reference):
+	publication_id = None
+	ret = error_intolerant_search(cursor, f"select id from publications where reference='{reference}'")
+	if not ret:
+		qry = f"insert into publications (reference) values ('{reference}')"
+		if search_db(cursor, qry, verbose=True): exit()
+		publication_id = hard_landing_search(cursor, "select max(id) from publications")[0][0]
+	elif len(ret)>1:
+		panic(["multiple returns for", reference])
+	else:
+		publication_id = ret[0][0]
+	return publication_id
+
+
+#####
+def store_publication(cursor, pubmed_id, reference):
+
+	if (not pubmed_id or pubmed_id!="None") and not reference: panic(["null entry for publication"])
+
+	if pubmed_id and pubmed_id!="None": return store_publication_by_pubmed_id(cursor, pubmed_id, reference)
+
+	return store_publication_by_reference(cursor, reference)
 
 
 #########################################
@@ -324,6 +351,7 @@ def main():
 
 	for case in cases:
 		[pubmed_id, ref, patient_id, c1, p1, c2, p2, value, onset, progression_string] = case
+		print(case)
 		# for allele1, allele 2
 		allele_ids = []
 		for [cdna_variants, protein_variants] in [[c1, p1], [c2, p2]]:
@@ -333,12 +361,21 @@ def main():
 			allele_id = store_allele(cursor, variant_ids)
 			if not allele_id: panic(["no allele id for "] + variant_ids)
 			allele_ids.append(allele_id)
-		# store or retreieve publication id
+
+		# store or retrieve publication id
 		publication_id = store_publication(cursor, pubmed_id, ref)
-		# store case: allele_id_1, allele_id_2, publication_id, patient_id, onset, value, better, progression
-		store_or_update(cursor, "cases", fixed_fields={'publication_id': publication_id, 'patient_xref_id': patient_id},
-		                        update_fields ={'allele_id_1': allele_ids[0], 'allele_id_2': allele_ids[1],
-												'onset_age': onset, 'acuity_type':'BCVA', 'eye':'better', 'progression':progression_string})
+		fixed_fields = {'publication_id': publication_id, 'patient_xref_id': patient_id}
+		update_fields ={'allele_id_1': allele_ids[0], 'allele_id_2': allele_ids[1],
+		                'onset_age': onset, 'acuity_type':'BCVA', 'eye':'better',
+		                'progression':progression_string}
+
+		#store case: allele_id_1, allele_id_2, publication_id, patient_id, onset, value, better, progression
+		store_or_update(cursor, "cases", fixed_fields=fixed_fields, update_fields=update_fields)
+
+		# print(fixed_fields)
+		# print(update_fields)
+		# print()
+		#exit()
 	cursor.close()
 	db.close()
 

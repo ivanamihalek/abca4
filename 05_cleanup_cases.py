@@ -251,6 +251,12 @@ def allele_cleanup(cdna_allele_string, protein_allele_string,  verbose=False, ou
 
 
 def parse_in(in_tsv, verbose=False, outf=None, faux=False):
+	if not os.path.exists(in_tsv):
+		print(f"{in_tsv} not found")
+		exit()
+	if not in_tsv[-4:]==".tsv":
+		print(f"is {in_tsv} a tsv file?")
+		exit()
 	cases = {}
 	inf = open(in_tsv)
 	linect = 0
@@ -307,6 +313,87 @@ def parse_in(in_tsv, verbose=False, outf=None, faux=False):
 	return cases, reference
 
 
+def parse_boston_allele(allele):
+	protein = []
+	cdna = []
+	for v in  allele.split("/"):
+		if ":" in v:
+			p,c = v.split(":")
+		else:
+			p = ""
+			c = v
+		protein.append(p.replace("p.",""))
+		cdna.append(c.replace("c.",""))
+	return ";".join(cdna), ";".join(protein)
+
+
+# in Dropbox: boston_alleles.tsv,  boston_progression.tsv
+def parse_in_boston(in_tsv):
+
+	if not os.path.exists(in_tsv):
+		print(f"{in_tsv} not found")
+		exit()
+	if not in_tsv[-4:] == ".tsv":
+		print(f"is {in_tsv} a tsv file?")
+		exit()
+	inf = open(in_tsv)
+
+	pubmed_id = "None"
+	ref = "Fulton2020"
+	cases = {}
+	for line in inf:
+		fields = [f.strip() for f in line.split('\t')]
+		patient_id, allele1, allele2 = fields[:3]
+		if patient_id == "Number": continue # header
+		c1, p1 = parse_boston_allele(allele1)
+		c2, p2 = parse_boston_allele(allele2)
+
+		cdna_allele_1, protein_allele_1 = allele_cleanup(c1, p1)
+		if len(cdna_allele_1)==0 and len(protein_allele_1)==0:
+			print("one allele missing in\n", line)
+			exit()
+		cdna_allele_2, protein_allele_2 = allele_cleanup(c2, p2)
+		if len(cdna_allele_2)==0 and len(protein_allele_2)==0:
+			print("one allele missing in\n", line)
+			exit()
+
+		cases[f"{pubmed_id}\t{patient_id}"] = [";".join(cdna_allele_1), ";".join(protein_allele_1),
+										";".join(cdna_allele_2), ";".join(protein_allele_2), 'BCVA', -1, ""]
+
+	inf.close()
+	return cases, {pubmed_id:ref}
+
+
+def parse_progression(in_tsv):
+	progression = {}
+	if not os.path.exists(in_tsv):
+		print(f"{in_tsv} not found")
+		exit()
+	if not in_tsv[-4:] == ".tsv":
+		print(f"is {in_tsv} a tsv file?")
+		exit()
+	inf = open(in_tsv)
+	for line in inf:
+		fields = [f.strip() for f in line.split('\t')]
+		if len(fields)<4 or fields[0]=="": continue # empty row
+		[patient_id, age, va_od, va_os]  = fields[:4]
+		if "Patient" in patient_id: continue # header
+		if not patient_id in progression: progression[patient_id] = []
+		va_od = float(va_od)
+		va_os = float(va_os)
+		better_eye_va = "%.2f"%(20/min(va_od, va_os))
+		progression[patient_id].append(f"{age}:{better_eye_va}")
+
+	inf.close()
+
+	progression_string = {}
+	# the age runs backwards for some reason
+	for k, v in progression.items():
+		prog = sorted(v, key=lambda datapoint: float(datapoint.split(":")[0]))
+		progression_string[k] = ";".join(prog)
+
+	return progression_string
+
 
 #########################################
 def main():
@@ -314,27 +401,26 @@ def main():
 	# (or delete from input if you cannot)
 
 	if len(argv)<2:
-		print(f"usage: {argv[0]} <input tsv>")
+		print(f"usage: {argv[0]} <input tsv> [<progression tsv>]")
 		exit()
 
+	boston_input = len(argv)>2
 	in_tsv = argv[1]
-	if not os.path.exists(in_tsv):
-		print(f"{in_tsv} not found")
-		exit()
-	if not in_tsv[-4:]==".tsv":
-		print(f"is {in_tsv} a tsv file?")
-		exit()
 
 	# logf = open("load_cases.log", "w")
 	logf = None
-	cases, reference = parse_in(in_tsv, verbose=False, outf=logf)
+	cases, reference = parse_in_boston(in_tsv) if boston_input else parse_in(in_tsv, verbose=False, outf=logf)
+	progression = parse_progression(argv[2]) if boston_input else {}
 
-	out_tsv = in_tsv[:-4] + ".clean.tsv"
+	out_tsv = in_tsv.split("/")[-1][:-4] + ".clean.tsv"
 	with open(out_tsv, "w") as outf:
 		for case, data in cases.items():
 			[pubmed_id, patient_id] = case.split("\t")
 			[c1, p1, c2, p2, value, onset, progression_string] = data
-			print("\t".join([pubmed_id, reference[pubmed_id], patient_id, c1, p1, c2, p2,  "blah", "blah", value, str(onset), progression_string]),  file=outf)
+			if boston_input: progression_string = progression[patient_id]
+
+			print("\t".join([pubmed_id, reference[pubmed_id], patient_id, c1, p1, c2, p2,
+			                 "blah", "blah", value, str(onset), progression_string]),  file=outf)
 	print("number of cases", len(cases), file=logf)
 
 	# self consistency check
