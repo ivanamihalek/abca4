@@ -107,7 +107,7 @@ def tweak(zero2four):
 
 
 ##########
-def sim_loop(case_variants, age, orig_variant_parameters):
+def optimization_loop(case_variants, age, orig_variant_parameters):
 	case_id = list(case_variants.keys())
 	number_of_cases = len(case_id)
 
@@ -171,7 +171,7 @@ def main():
 	plot_distros(case_variants, age, variant_parameters)
 	exit()
 
-	new_variant_params = sim_loop(case_variants, age, variant_parameters)
+	new_variant_params = optimization_loop(case_variants, age, variant_parameters)
 
 	plot_distros(case_variants, age, new_variant_params)
 

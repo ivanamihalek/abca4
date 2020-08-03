@@ -61,12 +61,19 @@ def table_creator(cursor, workbook, xlsx_format):
 
 		qry = f"select pubmed, pubmedcentral, reference  from publications where id = {publication_id}"
 		[pubmed_id, pmc_id, reference] = hard_landing_search(cursor,qry)[0]
-		pubmed_hyperlink = "http://pubmed.ncbi.nlm.nih.gov/%s" % pubmed_id
-		worksheet.write_url(row, column, pubmed_hyperlink, string=str(pubmed_id))
+		if pubmed_id:
+			pubmed_hyperlink = "http://pubmed.ncbi.nlm.nih.gov/%s" % pubmed_id
+			worksheet.write_url(row, column, pubmed_hyperlink, string=str(pubmed_id))
+		else:
+			worksheet.write(row, column, "no PubMed yet")
+
 		column += 1
 
-		pmc_hyperlink = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s" % pmc_id
-		worksheet.write_url(row, column, pmc_hyperlink, string=reference)
+		if pmc_id:
+			pmc_hyperlink = "https://www.ncbi.nlm.nih.gov/pmc/articles/%s" % pmc_id
+			worksheet.write_url(row, column, pmc_hyperlink, string=reference)
+		else:
+			worksheet.write(row, column, "no PMC")
 		column += 1
 
 		for content in [patient_xref_id, cdna1, prot1, freqs1, homozygs1, region1, cons1,
