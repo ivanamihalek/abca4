@@ -145,8 +145,8 @@ def tweak(e_prev, t_prev, rpe_baseline_prev, character):
 		else:
 			rpe_baseline += 0.01
 
-
 	return [e,t, rpe_baseline]
+
 
 ##########
 def optimization_loop(orig_params, case_variants, rpe_baseline, progression, character):
@@ -199,6 +199,7 @@ def optimization_loop(orig_params, case_variants, rpe_baseline, progression, cha
 	print("min dist found:  %7.3f  " % min_dist)
 	return params, rpe_baseline
 
+
 def plot_sim_results_vs_data(x, y, progression, case_ids, title):
 	age = {}
 	va = {}
@@ -250,7 +251,6 @@ def main():
 		print("intial d = %.2f"% param_descr["rmsd"])
 
 		new_variant_params, new_rpe_baseline = optimization_loop(parameters, vars, rpe_baseline, progression[case_id],  character)
-
 
 		params_vals = list(parameters.values())
 		print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
