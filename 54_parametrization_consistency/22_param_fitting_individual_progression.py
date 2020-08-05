@@ -1,12 +1,15 @@
 #!/usr/bin/python3
 import copy
-from math import sqrt
+from math import sqrt, exp
 from random import random
 
 from utils.abca4_mysql import  *
 
 from utils.simulation import progression_sim
 import matplotlib.pyplot as plt
+
+
+
 
 def panic(msg):
 	print(msg)
@@ -55,20 +58,20 @@ def read_in_values():
 
 	return [case_variants, prog]
 
-def sim(var1_param, var2_param, max_age):
+def sim(var1_param, var2_param, rpe_baseline, max_age):
 	# the values for one case/patient
 	# alpha is the abilty to fold and incorporate
 	# "fraction" refers to the fraction of the wild-type capability
 	expression_fraction = [var1_param[0], var2_param[0]]
 	transport_fraction = [var1_param[1], var2_param[1]]
-	x, y  = progression_sim(max_age, expression_fraction, transport_fraction, verbose=False)
+	x, y  = progression_sim(max_age, expression_fraction, transport_fraction, rpe_baseline=rpe_baseline, verbose=False)
 	return x, y
 
 
 #########################################
 from scipy.interpolate import interp1d
 
-def target_function(params, variants, progression, character=None):
+def target_function(params, variants, rpe_baseline, progression, character=None):
 
 	# collect the top offenders as we go
 	rmsd_distances_per_variant = {}
@@ -79,7 +82,7 @@ def target_function(params, variants, progression, character=None):
 	age, va = [float(number) for number in progression.split(";")[-1].split(":")]
 	# expected va: simulate to  nearest rounded age
 	vid = list(variants.keys())
-	x, y = sim(params[vid[0]], params[vid[1]], int(round(age))+50)
+	x, y = sim(params[vid[0]], params[vid[1]], rpe_baseline, int(round(age))+50)
 
 	interpol = interp1d(x, y["throughput"])
 
@@ -98,12 +101,14 @@ def target_function(params, variants, progression, character=None):
 	parametrization_descriptor = {"rmsd": d, "sign": literal_value}
 	return parametrization_descriptor
 
+
 ########################################
-def tweak(e_prev, t_prev, dist_per_var, character):
+def tweak(e_prev, t_prev, rpe_baseline_prev, character):
 	[cdna, prot, notes] = character
-	[e,t] = [e_prev, t_prev]
+	[e,t,rpe_baseline] = [e_prev, t_prev, rpe_baseline_prev]
 	# if dist_per_var<0:
-	if random() < 0:
+	die = random()
+	if die < 0.4:
 		# we need to increase the (presumed) performance
 		if 'splice' in prot:
 			e = e_prev + 0.1
@@ -117,7 +122,7 @@ def tweak(e_prev, t_prev, dist_per_var, character):
 		if t>1.0: t=1.0
 
 
-	else:
+	elif  die<0.8:
 		if 'splice' in prot:
 			e = e_prev - 0.1
 		else:
@@ -129,11 +134,22 @@ def tweak(e_prev, t_prev, dist_per_var, character):
 		if e<0.0: e=0.0
 		if t<0.0: t=0.0
 
+	elif  die<0.9:
+		if rpe_baseline<0.2:
+			rpe_baseline = min(0.2, rpe_baseline+0.01)
+		else:
+			rpe_baseline -= 0.01
+	else:
+		if rpe_baseline>0:
+			rpe_baseline = max(0.0, rpe_baseline-0.01)
+		else:
+			rpe_baseline += 0.01
 
-	return [e,t]
+
+	return [e,t, rpe_baseline]
 
 ##########
-def optimization_loop(orig_params, case_variants, progression, character):
+def optimization_loop(orig_params, case_variants, rpe_baseline, progression, character):
 	case_id = list(case_variants.keys())
 	number_of_cases = len(case_id)
 
@@ -146,36 +162,42 @@ def optimization_loop(orig_params, case_variants, progression, character):
 		fixed[vid] = prms[0]<0.0001
 
 	params = copy.deepcopy(orig_params)
-
-	T = 1
-	for pass_number in range(1,100):
-		param_descr_prev = target_function(params, case_variants, progression)
+	T = 0.01
+	min_dist = 10
+	for pass_number in range(1,1000):
+		param_descr_prev = target_function(params, case_variants, rpe_baseline, progression)
 		dist_prev = param_descr_prev["rmsd"]
 		print("%2d     %.2f"%(pass_number, dist_prev))
 
 		ct = 0
+		rpe_baseline_prev = rpe_baseline
 		for vid, prms in params.items():
 			if fixed[vid]: continue # we do not change the null variants
 			ct += 1
 			if not ct%50: print(f"{ct} out of {len(params)}")
 			[e_prev, t_prev] = params[vid]
-			[e, t] = tweak(e_prev, t_prev, param_descr_prev["sign"], character[vid])
+			[e, t, rpe_baseline] = tweak(e_prev, t_prev, rpe_baseline_prev, character[vid])
 			params[vid] = [e,t]
-			param_descr = target_function(params, case_variants, progression)
+			param_descr = target_function(params, case_variants, rpe_baseline, progression)
 			dist = param_descr["rmsd"]
-			# print(" %7.2f   %7.2f   %7.2f    %7.2f   %7.2f      %7.3f   %7.3f   " %
-			#       (param_descr_prev["sign"],  e_prev, t_prev, e, t, dist_prev, dist), character[vid])
-			if dist<dist_prev:
+			# print(" %7.2f        %7.2f   %7.2f  %7.2f         %7.2f   %7.2f   %7.2f         %7.3f   %7.3f   " %
+			#       (param_descr_prev["sign"],  e_prev, t_prev, rpe_baseline_prev, e, t, rpe_baseline, dist_prev, dist))
+			if min_dist>dist: min_dist = dist
+			if dist<=dist_prev:
 				# accept
 				dist_prev = dist
+				rpe_baseline_prev = rpe_baseline
+			elif random()< exp(-(dist-dist_prev)/T):
+				print("accepted %.2f --> %.2f      %.3f" % (dist_prev, dist, exp(-(dist-dist_prev)/T)))
+				# accept
+				dist_prev = dist
+				rpe_baseline_prev = rpe_baseline
 			else:
 				# backpedal
-
 				params[vid] = [e_prev,t_prev]
 
-		#print("%2d     %.2f\n"%(pass_number, dist_prev))
-
-	return params
+	print("min dist found:  %7.3f  " % min_dist)
+	return params, rpe_baseline
 
 def plot_sim_results_vs_data(x, y, progression, case_ids, title):
 	age = {}
@@ -212,6 +234,7 @@ def plot_sim_results_vs_data(x, y, progression, case_ids, title):
 def main():
 
 	[case_variants, progression] = read_in_values()
+	rpe_baseline = 0.1
 
 	for case_id, vars in case_variants.items():
 		parameters = {}
@@ -222,22 +245,31 @@ def main():
 
 		print()
 		print(case_id, f"number of vars {len(parameters)}")
-		print(parameters)
 
-		param_descr  = target_function(parameters, vars, progression[case_id], character)
+		param_descr  = target_function(parameters, vars, rpe_baseline, progression[case_id], character)
 		print("intial d = %.2f"% param_descr["rmsd"])
-		new_variant_params = optimization_loop(parameters, vars, progression[case_id],  character)
-		print(new_variant_params)
+
+		new_variant_params, new_rpe_baseline = optimization_loop(parameters, vars, rpe_baseline, progression[case_id],  character)
+
+
+		params_vals = list(parameters.values())
+		print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
+	       (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1], rpe_baseline) )
+		print("------------------------------")
 		params_vals = list(new_variant_params.values())
-		print(params_vals[0],  params_vals[1])
+		print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
+            (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1], new_rpe_baseline) )
+
+
 		# simulate
-		x, y = sim(params_vals[0], params_vals[1], max_age=50)
+		x, y = sim(params_vals[0], params_vals[1], new_rpe_baseline, max_age=50)
 		# plot_
 		# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
 
 		title = f"a1:  %.2f  %.2f\na2:  %.2f  %.2f" % (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1])
 		plot_sim_results_vs_data(x, y, progression, [case_id], title)
 
+		exit()
 
 	#
 	# plot(parameters, new_variant_params, character)

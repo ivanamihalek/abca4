@@ -39,11 +39,11 @@ We take there are two, and their ratio depends on the gene's ability to produce 
 alpha_wt = 0.05
 # beta  =  RPE decay parameter
 beta_wt  = 200
-rpe_baseline = 0.1
+
 max_steps = 1000
 destroyable_fraction = 0.5
 
-def progression_sim(max_age, alpha_fraction, transport_efficiency, verbose=False):
+def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline = 0.1, verbose=False):
 
 	x = []
 	y = {"throughput":[], "fraction_0":[], "fraction_1":[] , "rpe":[]}
@@ -68,7 +68,6 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, verbose=False
 		y["fraction_0"].append(fraction[0])
 		y["fraction_1"].append(fraction[1])
 		# rescale rpe to have some baseline
-
 		y["rpe"].append(rpe_baseline + (1-rpe_baseline)*rpe)
 
 	return x, y
