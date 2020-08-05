@@ -9,11 +9,10 @@ from utils.simulation import progression_sim
 import matplotlib.pyplot as plt
 
 
-
-
 def panic(msg):
 	print(msg)
 	exit(1)
+
 
 def variant_info(cursor, allele_id):
 	qry = f"select variant_ids from alleles where id={allele_id}"
@@ -34,7 +33,7 @@ def variant_info(cursor, allele_id):
 def read_in_values():
 	db, cursor = abca4_connect()
 
-	# fitting on our own cases on purpose
+	# fitting on our own cases on purpose 52 is our set of data
 	qry  = "select id, allele_id_1, allele_id_2,  progression from cases "
 	qry += "where (notes is null or notes not like '%caveat%') and publication_id = 52"
 
@@ -58,6 +57,41 @@ def read_in_values():
 
 	return [case_variants, prog]
 
+#########################################
+def find_groups(case_variants):
+	groups = []
+	for case_id, vars in case_variants.items():
+		var_ids = set(list(vars.keys()))
+		case_belongs_to = []
+		for group in groups:
+			if len(group.intersection(var_ids))>0:
+				case_belongs_to.append(groups.index(group))
+		if len(case_belongs_to)==0:
+			groups.append(var_ids)
+		elif len(case_belongs_to)==1:
+			groups[case_belongs_to[0]].update(var_ids)
+		elif len(case_belongs_to)==2:
+			group1 = groups[case_belongs_to[0]]
+			group1.update(var_ids)
+			# add the second group to the first
+			group2 = groups[case_belongs_to[1]]
+			group1.update(group2)
+			# and remove the second group
+			groups.remove(group2)
+		else:
+			print(f"case {case_id} belongs to more than 1 group")
+			print(var_ids)
+			print(groups)
+			exit()
+	return groups
+
+def is_in_group(group, case_id, case_variants):
+	var_ids = set(list(case_variants[case_id].keys()))
+	return len(group.intersection(var_ids))>0
+
+
+
+#########################################
 def sim(var1_param, var2_param, rpe_baseline, max_age):
 	# the values for one case/patient
 	# alpha is the abilty to fold and incorporate
@@ -71,33 +105,29 @@ def sim(var1_param, var2_param, rpe_baseline, max_age):
 #########################################
 from scipy.interpolate import interp1d
 
-def target_function(params, variants, rpe_baseline, progression, character=None):
 
-	# collect the top offenders as we go
-	rmsd_distances_per_variant = {}
-	distances_per_variant = {}
-	if len(variants)!=2: panic("at the moemnt I can handle one and only one var per allele")
-
-	# age,va = last point in progression - the age to which we want to run the simulation
-	age, va = [float(number) for number in progression.split(";")[-1].split(":")]
-	# expected va: simulate to  nearest rounded age
-	vid = list(variants.keys())
-	x, y = sim(params[vid[0]], params[vid[1]], rpe_baseline, int(round(age))+50)
-
-	interpol = interp1d(x, y["throughput"])
+def target_function(params, case_ids, case_variants, rpe_baseline, progression):
 
 	d = 0
 	norm = 0
 	literal_value = 0
-	for agepoint in progression.split(";"):
-		age, va = [float(p) for p in agepoint.split(":")]
-		expected_va = interpol([age])[0]
-		d += (va - expected_va)**2
-		norm += 1
-		literal_value += expected_va - va
+	for case_id in case_ids:
+		# age,va = last point in progression - the age to which we want to run the simulation
+		age, va = [float(number) for number in progression[case_id].split(";")[-1].split(":")]
+
+		# expected va: simulate to  nearest rounded age
+		vid = list(case_variants[case_id].keys())
+		x, y = sim(params[vid[0]], params[vid[1]], rpe_baseline[case_id], int(round(age))+5)
+		interpol = interp1d(x, y["rpe"])
+		for agepoint in progression[case_id].split(";"):
+			age, va = [float(p) for p in agepoint.split(":")]
+			expected_va = interpol([age])[0]
+			d += (va - expected_va)**2
+			norm += 1
+			literal_value += expected_va - va
 
 	d = sqrt(d/norm) if norm>0 else 0
-	literal_value = literal_value/norm  if norm>0 else 0
+	literal_value = literal_value/norm if norm>0 else 0
 	parametrization_descriptor = {"rmsd": d, "sign": literal_value}
 	return parametrization_descriptor
 
@@ -164,10 +194,13 @@ def optimization_loop(orig_params, case_variants, rpe_baseline, progression, cha
 	params = copy.deepcopy(orig_params)
 	T = 0.01
 	min_dist = 10
+	min_params = copy.deepcopy(params)
+	min_rpe_baseline = rpe_baseline
+
 	for pass_number in range(1,1000):
 		param_descr_prev = target_function(params, case_variants, rpe_baseline, progression)
 		dist_prev = param_descr_prev["rmsd"]
-		print("%2d     %.2f"%(pass_number, dist_prev))
+		#print("%2d     %.2f"%(pass_number, dist_prev))
 
 		ct = 0
 		rpe_baseline_prev = rpe_baseline
@@ -182,13 +215,16 @@ def optimization_loop(orig_params, case_variants, rpe_baseline, progression, cha
 			dist = param_descr["rmsd"]
 			# print(" %7.2f        %7.2f   %7.2f  %7.2f         %7.2f   %7.2f   %7.2f         %7.3f   %7.3f   " %
 			#       (param_descr_prev["sign"],  e_prev, t_prev, rpe_baseline_prev, e, t, rpe_baseline, dist_prev, dist))
-			if min_dist>dist: min_dist = dist
+			if min_dist>dist:
+				min_dist = dist
+				min_params = copy.deepcopy(params)
+				min_rpe_baseline = rpe_baseline
 			if dist<=dist_prev:
 				# accept
 				dist_prev = dist
 				rpe_baseline_prev = rpe_baseline
 			elif random()< exp(-(dist-dist_prev)/T):
-				print("accepted %.2f --> %.2f      %.3f" % (dist_prev, dist, exp(-(dist-dist_prev)/T)))
+				#print("accepted %.2f --> %.2f      %.3f" % (dist_prev, dist, exp(-(dist-dist_prev)/T)))
 				# accept
 				dist_prev = dist
 				rpe_baseline_prev = rpe_baseline
@@ -197,7 +233,7 @@ def optimization_loop(orig_params, case_variants, rpe_baseline, progression, cha
 				params[vid] = [e_prev,t_prev]
 
 	print("min dist found:  %7.3f  " % min_dist)
-	return params, rpe_baseline
+	return min_params, min_rpe_baseline
 
 
 def plot_sim_results_vs_data(x, y, progression, case_ids, title):
@@ -232,44 +268,85 @@ def plot_sim_results_vs_data(x, y, progression, case_ids, title):
 
 
 #########################################
+def fit_to_variant_group(group, case_ids, case_variants, progression):
+	rpe_baseline = 0.1
+	print(group)
+	for case_id in case_ids:
+		print("\t", case_id, case_variants[case_id])
+
+	# the params shoud be per variant
+	params = {}
+	rpe_baseline = {}
+	for case_id in case_ids:
+		rpe_baseline[case_id] = case_id
+		for var_id, var_descr in case_variants[case_id].items():
+			if  var_id in params: continue
+			params[var_id] = var_descr[:2]
+
+	for v, p in params.items():
+		print(v,p)
+	param_descr  = target_function(params, case_ids, case_variants, rpe_baseline, progression)
+	print("intial d = %.2f"% param_descr["rmsd"])
+	exit()
+
+
+#########################################
 def main():
 
 	[case_variants, progression] = read_in_values()
-	rpe_baseline = 0.1
+	groups = find_groups(case_variants)
 
-	for case_id, vars in case_variants.items():
-		parameters = {}
-		character = {}
-		for vid, variant_info in vars.items():
-			parameters[vid] = variant_info[:2]
-			character[vid]  = variant_info[2:5]
-
-		print()
-		print(case_id, f"number of vars {len(parameters)}")
-
-		param_descr  = target_function(parameters, vars, rpe_baseline, progression[case_id], character)
-		print("intial d = %.2f"% param_descr["rmsd"])
-
-		new_variant_params, new_rpe_baseline = optimization_loop(parameters, vars, rpe_baseline, progression[case_id],  character)
-
-		params_vals = list(parameters.values())
-		print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
-	       (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1], rpe_baseline) )
-		print("------------------------------")
-		params_vals = list(new_variant_params.values())
-		print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
-            (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1], new_rpe_baseline) )
+	case_ids_belonging_to_group = {}
+	for g in range(len(groups)):
+		group = groups[g]
+		if len(group)<4: continue
+		if g not in case_ids_belonging_to_group: case_ids_belonging_to_group[g] = []
+		for case_id, vars in case_variants.items():
+			if not is_in_group(group, case_id, case_variants): continue
+			case_ids_belonging_to_group[g].append(case_id)
 
 
-		# simulate
-		x, y = sim(params_vals[0], params_vals[1], new_rpe_baseline, max_age=50)
-		# plot_
-		# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
+	for g, case_ids in case_ids_belonging_to_group.items():
+		group = groups[g]
+		fit_to_variant_group(group, case_ids, case_variants, progression)
 
-		title = f"a1:  %.2f  %.2f\na2:  %.2f  %.2f" % (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1])
-		plot_sim_results_vs_data(x, y, progression, [case_id], title)
+	exit()
 
-		exit()
+
+	#
+	# for case_id, vars in case_variants.items():
+	# 	parameters = {}
+	# 	character = {}
+	# 	for vid, variant_info in vars.items():
+	# 		parameters[vid] = variant_info[:2]
+	# 		character[vid]  = variant_info[2:5]
+	#
+	# 	print()
+	# 	print(case_id, f"number of vars {len(parameters)}")
+	#
+	# 	param_descr  = target_function(parameters, vars, rpe_baseline, progression[case_id])
+	# 	print("intial d = %.2f"% param_descr["rmsd"])
+	#
+	# 	new_variant_params, new_rpe_baseline = optimization_loop(parameters, vars, rpe_baseline, progression[case_id],  character)
+	#
+	# 	params_vals = list(parameters.values())
+	# 	print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
+	#        (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1], rpe_baseline) )
+	# 	print("------------------------------")
+	# 	params_vals = list(new_variant_params.values())
+	# 	print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
+     #        (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1], new_rpe_baseline) )
+	#
+	#
+	# 	# simulate
+	# 	x, y = sim(params_vals[0], params_vals[1], new_rpe_baseline, max_age=50)
+	# 	# plot_
+	# 	# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
+	#
+	# 	title = f"a1:  %.2f  %.2f\na2:  %.2f  %.2f" % (params_vals[0][0], params_vals[0][1], params_vals[1][0], params_vals[1][1])
+	# 	plot_sim_results_vs_data(x, y, progression, [case_id], title)
+	#
+	# 	#exit()
 
 	#
 	# plot(parameters, new_variant_params, character)

@@ -49,8 +49,7 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 	y = {"throughput":[], "fraction_0":[], "fraction_1":[] , "rpe":[]}
 	beta = beta_wt
 	alpha = [alpha_wt*alpha_fraction[0], alpha_wt*alpha_fraction[1]]
-	throughput = 1
-	rpe = 1
+
 	for age in range(max_age):
 		# we shouldn't divide by 0
 		f = exp(-(age/beta)**2)
@@ -69,6 +68,7 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 		y["fraction_1"].append(fraction[1])
 		# rescale rpe to have some baseline
 		y["rpe"].append(rpe_baseline + (1-rpe_baseline)*rpe)
+		#y["rpe"].append(rpe) # this just does not reporoduse the observed behavior
 
 	return x, y
 
