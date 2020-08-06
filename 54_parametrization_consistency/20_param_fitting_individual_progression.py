@@ -244,7 +244,8 @@ def main():
 	[case_variants, progression] = read_in_values()
 	rpe_baseline = 0.1
 
-	for case_id, vars in case_variants.items():
+	#for case_id, vars in case_variants.items():
+	for case_id, vars in [[683, case_variants[683]]]:
 		parameters = {}
 		character = {}
 		for vid, variant_info in vars.items():
