@@ -2,7 +2,7 @@
 
 # somebody somehwere wrote a buggy program and its output became a norm:
 # sometimes, but no systematically, for a gene coded in reverse strand
-# when mutations are within the exons, their position is numbere from left to right
+# when mutations are within the exons, their position is numbered from left to right
 
 # c.3607G>T means that the position 3607 on the coding DNA (counted from the left) is mutated to T
 # however, c.3523-2A>G means that at position  3523 counted from *right* there is mutation in the intron,

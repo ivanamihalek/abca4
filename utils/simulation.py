@@ -53,8 +53,8 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 	for age in range(max_age):
 		# we shouldn't divide by 0
 		f = exp(-(age/beta)**2)
-		rpe =2*f/(1+f)
-		#rpe = f # doesn't really make much difference - the 2*f/(1+f) is a bit "rounder"
+		#rpe =2*f/(1+f)
+		rpe = f # doesn't really make much difference - the 2*f/(1+f) is a bit "rounder"
 
 		delivery_rate = [alpha[0]*rpe, alpha[1]*rpe]
 		fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
@@ -128,6 +128,18 @@ def sim_core (delivery_rate, plot=False, verbose=False):
 
 	return points[-1]
 
+
+########################################
+def sim(var1_param, var2_param, rpe_baseline, max_age):
+	# the values for one case/patient
+	# alpha is the abilty to fold and incorporate
+	# "fraction" refers to the fraction of the wild-type capability
+	expression_fraction = [var1_param[0], var2_param[0]]
+	transport_fraction = [var1_param[1], var2_param[1]]
+	x, y  = progression_sim(max_age, expression_fraction, transport_fraction, rpe_baseline=rpe_baseline, verbose=False)
+	return x, y
+
+########################################
 def main():
 
 

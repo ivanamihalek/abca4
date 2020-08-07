@@ -7,6 +7,17 @@ from utils.abca4_gene import abca4_donor_splice
 
 #########################################
 
+def unpack_progression(progression):
+	age = []
+	va = []
+	for agepoint in progression.split(";"):
+		[a, v]  = [float(number) for number in agepoint.split(":")]
+		age.append(a)
+		va.append(v)
+	return age, va
+
+#########################################
+
 def parse_protein(protein):
 	if not protein: return [None, None, None]
 	pattern = re.match('(\D{3})(\d+)(\D{3})', protein.strip().replace("p.",""))
@@ -79,7 +90,6 @@ def in_nucleotide_neighborhood(protein):
 
 	return True
 
-
 # this is not very reliable:
 # we have a case wiht two "misfolder" alleles that is over 40 at onset
 def is_misfolder(cdna, protein_vars):
@@ -98,12 +108,10 @@ def is_misfolder(cdna, protein_vars):
 				return True
 	return False
 
-
 def is_exotic(cdna, protein):
 	if not cdna: return False
 	if "5461-10" in cdna: return True
 	return False
-
 
 def parse_splice(cdna):
 	pattern = re.findall('(\d+)[\-+](\d+)(\D)', cdna)

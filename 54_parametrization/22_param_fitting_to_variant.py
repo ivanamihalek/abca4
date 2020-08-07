@@ -4,8 +4,8 @@ from math import sqrt, exp
 from random import random, choice
 
 from utils.abca4_mysql import  *
-
-from utils.simulation import progression_sim
+from utils.utils import unpack_progression
+from utils.simulation import *
 import matplotlib.pyplot as plt
 
 
@@ -91,16 +91,6 @@ def is_in_group(group, case_id, case_variants):
 	var_ids = set(list(case_variants[case_id].keys()))
 	return len(group.intersection(var_ids))>0
 
-
-#########################################
-def sim(var1_param, var2_param, rpe_baseline, max_age):
-	# the values for one case/patient
-	# alpha is the abilty to fold and incorporate
-	# "fraction" refers to the fraction of the wild-type capability
-	expression_fraction = [var1_param[0], var2_param[0]]
-	transport_fraction = [var1_param[1], var2_param[1]]
-	x, y  = progression_sim(max_age, expression_fraction, transport_fraction, rpe_baseline=rpe_baseline, verbose=False)
-	return x, y
 
 
 #########################################
@@ -259,7 +249,7 @@ def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, p
 	min_params = copy.deepcopy(orig_params)
 	min_rpe_baseline = copy.deepcopy(orig_rpe_baseline)
 
-	for pass_number in range(1,500):
+	for pass_number in range(1,300):
 
 		param_descr_prev = target_function(params, case_ids, case_variants, rpe_baseline, progression)
 		dist_prev = param_descr_prev["rmsd"]
@@ -316,14 +306,6 @@ def plot_sim_results_vs_data(age, va, params1, params2, rpe_baseline, new_params
 	plt.show()
 	return
 
-def unpack_progression(progression):
-	age = []
-	va = []
-	for agepoint in progression.split(";"):
-		[a, v]  = [float(number) for number in agepoint.split(":")]
-		age.append(a)
-		va.append(v)
-	return age, va
 
 def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, case_variants,  progression, case_id):
 	print("\n========================")
@@ -346,8 +328,6 @@ def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, case_
 	age, va = unpack_progression(progression[case_id])
 	plot_sim_results_vs_data(age, va, parameters[var_ids[0]], parameters[var_ids[1]], rpe_baseline[case_id],
 	                         new_variant_params[var_ids[0]], new_variant_params[var_ids[1]], new_rpe_baseline[case_id])
-
-
 #########################################
 def fit_to_variant_group(group, case_ids, case_variants, progression):
 	rpe_baseline_init = 0.1
@@ -373,7 +353,18 @@ def fit_to_variant_group(group, case_ids, case_variants, progression):
 	for case_id in case_ids:
 		report(params, rpe_baseline, new_variant_params, new_rpe_baseline, case_variants, progression, case_id)
 
-	return
+	return new_variant_params
+
+#########################################
+def store(new_variant_params, group_id):
+	db, cursor = abca4_connect()
+	for vid, newprms in new_variant_params.items():
+		[enew, tnew] = newprms
+		store_or_update(cursor, 'parametrization_adjusted', fixed_fields={"variant_id":vid},
+		                update_fields={"expression_folding_membrane_incorporation":enew,
+		                               "transport_efficiency":tnew, "notes": f"group {group_id}"})
+	cursor.close()
+	db.close()
 
 
 #########################################
@@ -385,7 +376,7 @@ def main():
 	case_ids_belonging_to_group = {}
 	for g in range(len(groups)):
 		group = groups[g]
-		if len(group)<4: continue
+		if len(group)<3: continue
 		if g not in case_ids_belonging_to_group: case_ids_belonging_to_group[g] = []
 		for case_id, vars in case_variants.items():
 			if not is_in_group(group, case_id, case_variants): continue
@@ -393,8 +384,8 @@ def main():
 
 	for g, case_ids in case_ids_belonging_to_group.items():
 		group = groups[g]
-		fit_to_variant_group(group, case_ids, case_variants, progression)
-
+		new_variant_params = fit_to_variant_group(group, case_ids, case_variants, progression)
+		store(new_variant_params, g+1)
 
 
 #########################################
