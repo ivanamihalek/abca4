@@ -16,7 +16,7 @@ from utils.abca4_gene import  *
 single_letter_code = {'GLY':'G', 'ALA':'A',  'VAL':'V', 'LEU':'L', 'ILE':'I',
 		 'MET': 'M', 'PRO': 'P',  'TRP': 'W', 'PHE':'F', 'SER':'S',
 		 'CYS': 'C', 'THR': 'T',  'ASN': 'N', 'GLN':'Q', 'TYR':'Y',
-		 'LYS': 'K', 'ARG': 'R',  'HIS': 'H', 'ASP':'D', 'GLU':'E','TER':'*'}
+		 'LYS': 'K', 'ARG': 'R',  'HIS': 'H', 'ASP':'D', 'GLU':'E','TER':'*', 'DEL':'-'}
 
 three_letter_code = dict([(single_letter_code[k],k.capitalize()) for k in single_letter_code.keys()])
 # note that we have 3 different glyphs in use for the minus character

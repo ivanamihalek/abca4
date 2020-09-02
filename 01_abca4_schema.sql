@@ -63,7 +63,7 @@ CREATE TABLE `variants`(
   -- ? means unknown
   -- [membrane, splicing, folding, transport]: impaired [membrane incorporation, splicing, folding, payload transport]
   `conserved_in_ortho_verts` tinyint,
-  `conserved_in_verts_insects` tinyint,
+  `conserved_in_para_verts` tinyint,
   `systems_effect` ENUM ('null', 'unk', 'membrane', 'splicing', 'folding', 'transport') default 'unk'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

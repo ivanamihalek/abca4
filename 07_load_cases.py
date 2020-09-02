@@ -325,9 +325,9 @@ def store_publication_by_reference(cursor, reference):
 #####
 def store_publication(cursor, pubmed_id, reference):
 
-	if (not pubmed_id or pubmed_id!="None") and not reference: panic(["null entry for publication"])
+	if (not pubmed_id or pubmed_id.lower() !="none") and not reference: panic(["null entry for publication"])
 
-	if pubmed_id and pubmed_id!="None": return store_publication_by_pubmed_id(cursor, pubmed_id, reference)
+	if pubmed_id and pubmed_id.lower() !="none": return store_publication_by_pubmed_id(cursor, pubmed_id, reference)
 
 	return store_publication_by_reference(cursor, reference)
 
@@ -366,7 +366,7 @@ def main():
 		publication_id = store_publication(cursor, pubmed_id, ref)
 		fixed_fields = {'publication_id': publication_id, 'patient_xref_id': patient_id}
 		update_fields ={'allele_id_1': allele_ids[0], 'allele_id_2': allele_ids[1],
-		                'onset_age': onset, 'acuity_type':'BCVA', 'eye':'better',
+		                'onset_age': onset, 'acuity_type':'decimal', 'eye':'better',
 		                'progression':progression_string}
 
 		#store case: allele_id_1, allele_id_2, publication_id, patient_id, onset, value, better, progression

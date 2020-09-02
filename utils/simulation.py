@@ -57,7 +57,8 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 		rpe = f # doesn't really make much difference - the 2*f/(1+f) is a bit "rounder"
 
 		delivery_rate = [alpha[0]*rpe, alpha[1]*rpe]
-		fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
+		#fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
+		fraction = filling_fractions_for_const_delivery_rates(delivery_rate)
 		throughput = fraction[0]*transport_efficiency[0] + fraction[1]*transport_efficiency[1]
 		beta *= ((1-destroyable_fraction) + destroyable_fraction*throughput)
 
@@ -72,7 +73,37 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 
 	return x, y
 
+########################################
+def sim(var1_param, var2_param, rpe_baseline, max_age):
+	# the values for one case/patient
+	# alpha is the abilty to fold and incorporate
+	# "fraction" refers to the fraction of the wild-type capability
+	expression_fraction = [var1_param[0], var2_param[0]]
+	transport_fraction = [var1_param[1], var2_param[1]]
+	x, y  = progression_sim(max_age, expression_fraction, transport_fraction, rpe_baseline=rpe_baseline, verbose=False)
+	return x, y
 
+########################################
+def filling_fractions_for_const_delivery_rates(delivery_rate):
+	# this is to say
+	# time to fill is for the integral to equal to 1 (since everything equlas to 1)
+	# \int_0^{time_to_fill}(d1+d2) dt = 1
+	# therefore time_to_fill = 1/(d1+d2)
+	# if t_max is greater than that, we fill, otherwise we get a fraction
+	# note this does not take into accountcompeteing for the place in the
+	# membrane, but rather takes that finding the spot is not the problem
+	# the numerical difference is not that big, but the simulation, in this python version
+	# fiftten time faster
+	sumd = sum(delivery_rate)
+	if sumd<0.000001: return [0.0, 0.0]
+	time_to_fill = 1.0/sumd
+	if max_steps>=time_to_fill:
+		return [delivery_rate[0]/sumd, delivery_rate[1]/sumd]
+	else:
+		fraction = max_steps/time_to_fill
+		return [delivery_rate[0]/sumd*fraction, delivery_rate[1]/sumd*fraction]
+
+########################################
 def sim_core (delivery_rate, plot=False, verbose=False):
 
 	number_of_populations = len(delivery_rate)
@@ -91,8 +122,11 @@ def sim_core (delivery_rate, plot=False, verbose=False):
 		# the probabilty of being incorporated in the membrane is proportional to the size of the available pool
 		available_pool = [not_incorporated[i] + delivery_rate[i] for i in index_iterator]
 		# and the probability that the space in the mebrane is available
-		free_space   = (1.0 - total_fraction_occupied)
+		free_space = (1.0 - total_fraction_occupied)
 		# increase of each  population in the membrane  - this goes to zero as the free space does
+		# this is different than the assumptions of filling_fractions_for_const_delivery_rates
+		# it results in a little bit lower filling than filling_fractions_for_const_delivery_rates
+		# free_space = 1 # check that the numbers are the same as in the filling_fractions_for_const_delivery_rates case
 		delta = list(map(lambda a: a*free_space, available_pool))
 		incorporated_fraction = [incorporated_fraction[i] + delta[i] for i in index_iterator]
 		total_fraction_occupied = sum(incorporated_fraction)
@@ -101,6 +135,8 @@ def sim_core (delivery_rate, plot=False, verbose=False):
 		step +=1
 
 	if verbose:
+		print()
+		print(f" %.3f   %.3f "%(delivery_rate[0], delivery_rate[1]))
 		print(f"loop exited after {max_steps}")
 		print("sum delta %.1e  total frac occupied %.3f"%(sum(delta), total_fraction_occupied))
 		f1 = points[-1][0]
@@ -111,9 +147,8 @@ def sim_core (delivery_rate, plot=False, verbose=False):
 		d1 = delivery_rate[0]
 		d2 = delivery_rate[1]
 		if d1+d2> 0.001:
-			print("d1 relative%.3f"%(d1/(d1+d2)))
-			print("d2 relative%.3f"%(d2/(d1+d2)))
-		print()
+			print("d1 relative %.3f"%(d1/(d1+d2)))
+			print("d2 relative %.3f"%(d2/(d1+d2)))
 	if plot:
 		x = np.linspace(0, 1, len(points))
 		y0 = [f[0] for f in points]
@@ -129,24 +164,17 @@ def sim_core (delivery_rate, plot=False, verbose=False):
 	return points[-1]
 
 
-########################################
-def sim(var1_param, var2_param, rpe_baseline, max_age):
-	# the values for one case/patient
-	# alpha is the abilty to fold and incorporate
-	# "fraction" refers to the fraction of the wild-type capability
-	expression_fraction = [var1_param[0], var2_param[0]]
-	transport_fraction = [var1_param[1], var2_param[1]]
-	x, y  = progression_sim(max_age, expression_fraction, transport_fraction, rpe_baseline=rpe_baseline, verbose=False)
-	return x, y
 
 ########################################
 def main():
 
 
 	delivery_rate = [0.3, 0.5]
-	for i in range(10):
+	for i in range(15):
 		delivery_rate = [d/2 for d in delivery_rate]
-		sim_core (delivery_rate, plot=False, verbose=True)
+		[a1, a2] = sim_core(delivery_rate, plot=False, verbose=False)
+		[b1, b2] = filling_fractions_for_const_delivery_rates(delivery_rate)
+		print(f" %.5f   %.5f        %.4f   %.4f      %.4f   %.4f "%(delivery_rate[0], delivery_rate[1], a1, b1, a2, b2))
 
 	return
 

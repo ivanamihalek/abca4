@@ -51,8 +51,8 @@ def fill_column(cursor, filename, column, cutoff):
 def main():
 
 	db, cursor = abca4_connect()
-	fill_column(cursor, "conservation/vertebrates_only/specs_out.score", "conserved_in_ortho_verts", 0.40)
-	fill_column(cursor, "conservation/verts_insects/specs_out.score", "conserved_in_verts_insects", 0.16)
+	fill_column(cursor, "conservation/abca4/vertebrates_only/specs_out.score", "conserved_in_ortho_verts", 0.40)
+	fill_column(cursor, "conservation/abca4/paras/specs_out.score", "conserved_in_para_verts", 0.16)
 
 	cursor.close()
 	db.close()

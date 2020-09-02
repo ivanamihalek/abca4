@@ -32,7 +32,7 @@ def read_specs(infile):
 
 
 #########################################
-def annotate_by_cons(cons_data, protein, protein_domain):
+def annotate_variable_position(cons_data, protein, protein_domain):
 	[expression, transport, notes] = [1.0, 1.0, ""]
 	[type_in_specs, substitutions, cons] = cons_data
 	[aa_from_long, pos, aa_to_long] = parse_protein(protein)
@@ -51,10 +51,10 @@ def annotate_by_cons(cons_data, protein, protein_domain):
 			transport = 0.50
 			notes = "strong transport: TMD, novel subs"
 		elif protein_domain in ["ECD1", "ECD2"]:
-			transport = 0.50
+			transport = 0.25
 			notes = "strong transport: ECD, novel subs"
 		elif protein_domain in ["R"]:
-			transport = 0.25
+			transport = 0.50
 			notes = "sever transport: R, novel subs"
 		else:
 			transport = 0.75
@@ -94,7 +94,7 @@ def exception_handle(protein):
 #########################################
 def main():
 
-	cons_data = read_specs("conservation/vertebrates_only/specs_out.score")
+	cons_data = read_specs("conservation/abca4/vertebrates_only/specs_out.score")
 
 	db, cursor = abca4_connect()
 	# find column names
@@ -115,10 +115,12 @@ def main():
 		# initial guess: both factors unaffected
 		[expression, transport, notes] = [1.0, 1.0, ""]
 
+		############################################
 		# first let's get some exceptinal cases out of the way
 		if protein in exceptions:
 			[expression, transport, notes] = exception_handle(protein)
 		############################################
+		# expression
 		elif "fs" in protein:
 			if may_escape_NMD(cdna, protein):
 				expression = 0.5
@@ -136,9 +138,6 @@ def main():
 			else:
 				expression = 0.0
 				notes = "null: early stop"
-		elif is_del(cdna, protein):
-			expression = 0.0
-			notes = "null: del"
 		elif is_exotic(cdna, protein):
 			expression = 0.25
 			notes = "severe expression: exotic"
@@ -150,8 +149,8 @@ def main():
 		elif is_distant_splice(cdna, protein):
 			expression = 0.5
 			notes = "strong expression: distant splice"
-
 		############################################
+		# transport
 		elif is_salt_bridge(protein):
 			if pd in ["NBD1", "NBD2"]:
 				transport = 0.50
@@ -174,7 +173,7 @@ def main():
 			transport = 0.5
 			notes = "strong transport: in the nucleotide neighborhood"
 
-		elif named_field["conserved_in_verts_insects"]==1:
+		elif named_field["conserved_in_para_verts"]==1:
 			if homozygotes and homozygotes>1:
 				expression = 0.75
 				notes = "mild expression: cons in para but homozygotes exist"
@@ -199,7 +198,7 @@ def main():
 				transport = 0.50
 				notes = f"strong expr and transp: {pd}, cons in ortho"
 
-		elif "ins" in protein or "del" in  protein or "dup" in protein:
+		elif "ins" in protein or "del" in protein or "dup" in protein:
 			if pd=="linker":
 				expression = 0.5
 				transport = 0.5
@@ -212,7 +211,10 @@ def main():
 			notes = "suspicious: putative deep intronic"
 
 		elif is_missense(protein):
-			[expression, transport, notes] = annotate_by_cons(cons_data, protein, pd)
+			# for positions that are not completely conserved (not in orthos and not in paras, we took care of that above)
+			# check is the subsitution is seen in the alignment or (in which case it might be tolerated)
+			# or is  novel - that is, no other sequence has it at this position
+			[expression, transport, notes] = annotate_variable_position(cons_data, protein, pd)
 		else:
 			annotated -= 1
 			print(cdna, protein)

@@ -230,7 +230,7 @@ def accept_or_reject_parameter_change(parametrization, case_ids, case_variants, 
 
 
 ##########
-def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, progression, character):
+def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, progression, character, verbose=False):
 
 	# variants which we know are null at the start stay null
 	# some variants may become null during simulation, and
@@ -243,7 +243,6 @@ def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, p
 	params = copy.deepcopy(orig_params)
 	rpe_baseline = copy.deepcopy(orig_rpe_baseline)
 
-
 	T = 0.01
 	min_dist = 10
 	min_params = copy.deepcopy(orig_params)
@@ -253,7 +252,7 @@ def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, p
 
 		param_descr_prev = target_function(params, case_ids, case_variants, rpe_baseline, progression)
 		dist_prev = param_descr_prev["rmsd"]
-		print("\n  %4d before     %.2f"%(pass_number, dist_prev))
+		if verbose: print("\n  %4d before     %.2f"%(pass_number, dist_prev))
 
 		for vid, prms in params.items():
 			if fixed[vid]: continue # we do not change the null variants
@@ -270,9 +269,9 @@ def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, p
 			ret = accept_or_reject_parameter_change([params, rpe_baseline, T], case_ids, case_variants, progression, [None, case_id], prev)
 			[min_dist, min_params, min_rpe_baseline, dist_prev] = ret
 
-		print("  %4d  after     %.2f"%(pass_number, dist_prev))
+		if verbose: print("  %4d  after     %.2f"%(pass_number, dist_prev))
 
-	print("min dist found:  %7.3f  " % min_dist)
+	if verbose: print("min dist found:  %7.3f  " % min_dist)
 	return min_params, min_rpe_baseline
 
 #########################################
@@ -306,7 +305,7 @@ def plot_sim_results_vs_data(age, va, params1, params2, rpe_baseline, new_params
 	plt.show()
 	return
 
-
+#########################################
 def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, case_variants,  progression, case_id):
 	print("\n========================")
 	print(f"case id {case_id}")
@@ -328,6 +327,7 @@ def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, case_
 	age, va = unpack_progression(progression[case_id])
 	plot_sim_results_vs_data(age, va, parameters[var_ids[0]], parameters[var_ids[1]], rpe_baseline[case_id],
 	                         new_variant_params[var_ids[0]], new_variant_params[var_ids[1]], new_rpe_baseline[case_id])
+
 #########################################
 def fit_to_variant_group(group, case_ids, case_variants, progression):
 	rpe_baseline_init = 0.1

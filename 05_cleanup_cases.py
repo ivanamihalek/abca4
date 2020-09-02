@@ -45,7 +45,7 @@ def normalize(value_type, acuity):
 	for method in perception_methods:
 		if method in value_type: return 0.0
 
-	if "/" in acuity: # this is BCVA
+	if "/" in acuity: # this is decimal
 		[nom,denom] = acuity.split("/")
 		return float(nom)/float(denom)
 
@@ -303,10 +303,10 @@ def parse_in(in_tsv, verbose=False, outf=None, faux=False):
 		if patient_key in cases:
 			print("duplicate patient key:", patient_key)
 			exit()
-		# value type is BCVA, that is why we went through the "normalization" above
+		# value type is decimal, that is why we went through the "normalization" above
 		cases[patient_key] = [";".join(cdna_allele_1), ";".join(protein_allele_1),
 										";".join(cdna_allele_2), ";".join(protein_allele_2),
-										'BCVA', onset, progression_string]
+										'decimal', onset, progression_string]
 
 	inf.close()
 	if verbose: print("lines read in", linect, file=outf)
@@ -358,7 +358,7 @@ def parse_in_boston(in_tsv):
 			exit()
 
 		cases[f"{pubmed_id}\t{patient_id}"] = [";".join(cdna_allele_1), ";".join(protein_allele_1),
-										";".join(cdna_allele_2), ";".join(protein_allele_2), 'BCVA', -1, ""]
+										";".join(cdna_allele_2), ";".join(protein_allele_2), 'decimal', -1, ""]
 
 	inf.close()
 	return cases, {pubmed_id:ref}
