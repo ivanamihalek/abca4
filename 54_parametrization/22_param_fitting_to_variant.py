@@ -125,17 +125,18 @@ def target_function(params, case_ids, case_variants, rpe_baseline, progression):
 
 ########################################
 # the probabilty that we should tweak one particular characteristic value of a variant
-def  cutoff_prob_by_annotation(notes):
+def cutoff_prob_by_annotation(notes):
 	cutoff_prob = 0.5
 	if 'expression' in notes: # it is more likely that we should tweak the expression
 		if 'no expression' in notes:
 			cutoff_prob = 0.9
 		elif 'severe expression' in notes:
 			cutoff_prob = 0.8
-		elif 'strong expression' in notes: # means strongly affected, not robust expression
+		elif 'strong expression' in notes:  # means strongly affected, not robust expression
 			cutoff_prob = 0.7
 		elif 'mild expression' in notes:
 			cutoff_prob = 0.6
+
 	elif 'transport' in notes:
 		if 'no transport' in notes:
 			cutoff_prob = 0.1
@@ -223,7 +224,7 @@ def accept_or_reject_parameter_change(parametrization, case_ids, case_variants, 
 	# 	dist_prev = dist
 	else:
 		# backpedal
-		if vid: params[vid] = [e_prev,t_prev]
+		if vid: params[vid] = [e_prev, t_prev]
 		if case_id: rpe_baseline[case_id] = rpe_baseline_prev
 
 	return [min_dist, min_params, min_rpe_baseline, dist_prev]
@@ -376,7 +377,7 @@ def main():
 	case_ids_belonging_to_group = {}
 	for g in range(len(groups)):
 		group = groups[g]
-		if len(group)<3: continue
+		if len(group)<5: continue
 		if g not in case_ids_belonging_to_group: case_ids_belonging_to_group[g] = []
 		for case_id, vars in case_variants.items():
 			if not is_in_group(group, case_id, case_variants): continue

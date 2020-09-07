@@ -108,10 +108,6 @@ def is_misfolder(cdna, protein_vars):
 				return True
 	return False
 
-def is_exotic(cdna, protein):
-	if not cdna: return False
-	if "5461-10" in cdna: return True
-	return False
 
 def parse_splice(cdna):
 	pattern = re.findall('(\d+)[\-+](\d+)(\D)', cdna)

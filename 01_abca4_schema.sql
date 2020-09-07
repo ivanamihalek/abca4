@@ -98,3 +98,13 @@ CREATE TABLE `parametrization_adjusted` (
    `notes` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+DROP TABLE IF EXISTS `parametrization_literature`;
+CREATE TABLE `parametrization_literature` (
+   `id` mediumint(9) NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
+   `variant_id`  mediumint(9),
+   `expression_folding_membrane_incorporation` float,
+   `transport_efficiency`   float,
+   `publication_id` mediumint(9)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+

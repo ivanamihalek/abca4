@@ -3,7 +3,7 @@
 import os, re, subprocess
 
 from utils.mysql import *
-from utils.structure import *
+from utils.exp_characterization import *
 from utils.utils import  *
 
 #########################################
@@ -62,35 +62,6 @@ def annotate_variable_position(cons_data, protein, protein_domain):
 
 	return [expression, transport, notes]
 
-exceptions = ['Leu2027Phe', 'Arg2030Gln', 'Arg602Gln', 'Asp1532Tyr']
-
-def exception_handle(protein):
-	[expression, transport, notes] = [1.0, 1.0, ""]
-
-	if 'Leu2027Phe' in protein:
-		# the experiment says this is a misfolder, but does not seem to be
-		expression = 0.75
-		notes = "mild expression: misfolder"
-	elif 'Arg2030Gln' in protein:
-		expression = 0.75
-		notes = "mild expression: from data"
-	elif 'Arg602Gln' in protein:
-		# 602 is and ECD1 position conserved in vertebrates
-		# accordingly  Arg602Trp is assgned no-transport value
-		# which corresponds t the observed onset range og 6-26 yrs in carrrier
-		# however Arg602Gln carriers  have onsets of 31, 38, 57
-		# the 31yr onset is a homozygote in this variant
-		transport = 0.50
-		notes = "strong transport: ECD1, from data"
-	elif 'Asp1532Tyr' in protein:
-		# 1532 is and ECD2 position conserved in vertebrates
-		# however Asp1532Tyr has only two cases, with onset  at 36 and 37
-		transport = 0.50
-		notes = "strong transport: ECD2, from data"
-
-
-	return [expression, transport, notes]
-
 #########################################
 def main():
 
@@ -116,9 +87,11 @@ def main():
 		[expression, transport, notes] = [1.0, 1.0, ""]
 
 		############################################
-		# first let's get some exceptinal cases out of the way
-		if protein in exceptions:
-			[expression, transport, notes] = exception_handle(protein)
+		# first let's get the handful of values for which we have exp support  out of the way
+		if cdna in characterized_cdna:
+			[expression, transport, notes] = characterized_cdna_values(cdna)
+		elif protein in characterized_protein:
+			[expression, transport, notes] = characterized_prot_values(protein)
 		############################################
 		# expression
 		elif "fs" in protein:
@@ -138,9 +111,6 @@ def main():
 			else:
 				expression = 0.0
 				notes = "null: early stop"
-		elif is_exotic(cdna, protein):
-			expression = 0.25
-			notes = "severe expression: exotic"
 		elif is_misfolder(cdna, protein):
 			expression = 0.25
 			notes = "severe expression: misfolder"

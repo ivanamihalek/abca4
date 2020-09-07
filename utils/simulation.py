@@ -46,7 +46,7 @@ destroyable_fraction = 0.5
 def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline = 0.1, verbose=False):
 
 	x = []
-	y = {"throughput":[], "fraction_0":[], "fraction_1":[] , "rpe":[]}
+	y = {"throughput":[], "fraction_0":[], "fraction_1":[], "rpe":[]}
 	beta = beta_wt
 	alpha = [alpha_wt*alpha_fraction[0], alpha_wt*alpha_fraction[1]]
 
@@ -57,8 +57,11 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 		rpe = f # doesn't really make much difference - the 2*f/(1+f) is a bit "rounder"
 
 		delivery_rate = [alpha[0]*rpe, alpha[1]*rpe]
-		#fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
-		fraction = filling_fractions_for_const_delivery_rates(delivery_rate)
+		fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
+		# there is something wrong wtih this  - somteims it misses spectacularly
+		# it looks in particular in the cases when a throughput of a variant
+		# has to be suppresed all the way to zero (unless there is a bug somewhere)
+		# fraction = filling_fractions_for_const_delivery_rates(delivery_rate)
 		throughput = fraction[0]*transport_efficiency[0] + fraction[1]*transport_efficiency[1]
 		beta *= ((1-destroyable_fraction) + destroyable_fraction*throughput)
 

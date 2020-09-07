@@ -124,7 +124,7 @@ def parse_cdna(cdna_var):
 	gdna_nt = Seq(get_nt_from_gdna(gdna_start, gdna_end)).reverse_complement()
 
 	if mod_type not in ["del", "ins", "delins"] and mod_from != gdna_nt:
-		print(f"\ncdna_var:{cdna_var}\n\tmod_type: {mod_type}\n\tpos_from: {pos_from}", end="")
+		print(f"\ncdna_var: {cdna_var}\n\tmod_type: {mod_type}\n\tpos_from: {pos_from}", end="")
 		print(f"\n\tpos_to: {pos_to}\n\tmod_from: {mod_from}  gdna_nt: {gdna_nt} \n\tmod_to: {mod_to}", end="")
 		print(f"\n\tgdna_start: {gdna_start}\n\tgdna_end: {gdna_end}")
 		exit()
