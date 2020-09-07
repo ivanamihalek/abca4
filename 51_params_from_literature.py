@@ -58,12 +58,12 @@ def sanity(frm, pos, to, protein_sequence, protein_variant):
 		print(f"type mismatch for {protein_variant} the original AA type at {pos} is {orig_aa}, here is {frm}")
 		exit()
 
-def store_publication(cursor, url, pmc, pubmed_id):
+def store_publication(cursor, url, pmc, pubmed_id, ref):
 
 	publication_id = None
 	ret = error_intolerant_search(cursor, f"select id from publications where other_xref='{url}'")
 	if not ret:
-		qry = f"insert into publications (other_xref) values ('{url}')"
+		qry = f"insert into publications (reference, other_xref) values ('{ref}', '{url}')"
 		if search_db(cursor, qry, verbose=True): exit()
 		publication_id = hard_landing_search(cursor, "select max(id) from publications")[0][0]
 		if pubmed_id:
@@ -92,7 +92,7 @@ def main():
 
 	db, cursor = abca4_connect()
 	for variant in variants:
-		[frm, pos, to, expression, transport, url, pmc, pubmed_id] = variant
+		[frm, pos, to, expression, transport, url, pmc, pubmed_id, ref] = variant
 		protein_variant = f"{three_letter_code[frm]}{pos}{three_letter_code[to]}"
 		# quick sanity check
 		sanity(frm, pos, to, protein_sequence, protein_variant)
@@ -100,16 +100,19 @@ def main():
 		print(frm, pos, to, expression, transport, url, pmc, pubmed_id, protein_variant, variant_ids)
 		#
 		# store or retrieve publication id
-		publication_id = store_publication(cursor, url, pmc, pubmed_id)
-		exit()
-		#
-		# #store case: allele_id_1, allele_id_2, publication_id, patient_id, onset, value, better, progression
-		# store_or_update(cursor, "cases", fixed_fields=fixed_fields, update_fields=update_fields)
-		#
-		# # print(fixed_fields)
-		# # print(update_fields)
-		# # print()
-		# #exit()
+		publication_id = store_publication(cursor, url, pmc, pubmed_id, ref)
+		for var_id in variant_ids:
+			fixed_fields = {'variant_id':var_id}
+			expression = float("%.2f"%(float(expression)/100))
+			transport = float("%.2f"%(float(transport)/100))
+			update_fields = {'expression_folding_membrane_incorporation':expression,
+			                 'transport_efficiency':transport,
+			                 'publication_id':publication_id}
+			print(fixed_fields)
+			print(update_fields)
+			print()
+
+			store_or_update(cursor, "parametrization_literature", fixed_fields=fixed_fields, update_fields=update_fields)
 
 	cursor.close()
 	db.close()

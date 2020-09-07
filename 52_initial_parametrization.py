@@ -62,6 +62,16 @@ def annotate_variable_position(cons_data, protein, protein_domain):
 
 	return [expression, transport, notes]
 
+def find_experimentally_characterized_protein(cursor):
+	experiment = {}
+	qry   = "select  v.protein, p.expression_folding_membrane_incorporation, p.transport_efficiency "
+	qry  += "from parametrization_literature p left join variants v on p.variant_id=v.id"
+	ret = error_intolerant_search(cursor, qry)
+	if ret:
+		for line in ret:
+			experiment[line[0]] = line[1:]
+	return experiment
+
 #########################################
 def main():
 
@@ -72,6 +82,8 @@ def main():
 	qry  = "select column_name from information_schema.columns "
 	qry += "where table_schema='abca4' and  table_name='variants' order by ordinal_position"
 	header = [row[0] for row in hard_landing_search(cursor, qry)]
+
+	caracterized_protein = find_experimentally_characterized_protein(cursor)
 
 	total = 0
 	annotated = 0
@@ -90,8 +102,9 @@ def main():
 		# first let's get the handful of values for which we have exp support  out of the way
 		if cdna in characterized_cdna:
 			[expression, transport, notes] = characterized_cdna_values(cdna)
-		elif protein in characterized_protein:
-			[expression, transport, notes] = characterized_prot_values(protein)
+		elif protein in caracterized_protein:
+			[expression, transport] = caracterized_protein[protein]
+
 		############################################
 		# expression
 		elif "fs" in protein:
