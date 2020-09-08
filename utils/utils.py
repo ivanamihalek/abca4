@@ -178,3 +178,8 @@ def subdir_prep(frames_home, subdir):
 	if not os.path.exists(outdir):
 		os.makedirs(outdir)
 
+
+def panic(panic_args):
+	print(panic_args)
+	exit()
+

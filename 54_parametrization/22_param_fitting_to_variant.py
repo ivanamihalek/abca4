@@ -276,60 +276,6 @@ def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, p
 	return min_params, min_rpe_baseline
 
 #########################################
-def plot_sim_results_vs_data(age, va, params1, params2, rpe_baseline, new_params1, new_params2, new_rpe_baseline):
-
-	# simulate
-	x, y = sim(params1, params2, rpe_baseline, max_age=50)
-	# plot_
-	# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
-	title = f"a1:  %.2f  %.2f\na2:  %.2f  %.2f" % (params1[0], params1[1], params2[0], params2[1])
-
-	# simulate
-	new_x, new_y = sim(new_params1, new_params2, new_rpe_baseline, max_age=50)
-	# plot_
-	# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
-	new_title = f"a1:  %.2f  %.2f\na2:  %.2f  %.2f" % (new_params1[0], new_params1[1], new_params2[0], new_params2[1])
-
-	rows = 1
-	cols = 2
-	fig, axs = plt.subplots(rows, cols)
-	axs[0].set_ylim(-0.1,1.1)
-	axs[0].set_title(title)
-	axs[0].plot(x, y["rpe"])
-	axs[0].scatter(age, va, color='red')
-
-	axs[1].set_ylim(-0.1,1.1)
-	axs[1].set_title(new_title)
-	axs[1].plot(new_x, new_y["rpe"])
-	axs[1].scatter(age, va, color='red')
-
-	plt.show()
-	return
-
-#########################################
-def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, case_variants,  progression, case_id):
-	print("\n========================")
-	print(f"case id {case_id}")
-
-	var_ids = list(case_variants[case_id].keys())
-	for var_id in var_ids:
-		print("\t", var_id, case_variants[case_id][var_id])
-
-	print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
-	       (parameters[var_ids[0]][0], parameters[var_ids[0]][1],
-	        parameters[var_ids[1]][0], parameters[var_ids[1]][1],  rpe_baseline[case_id]))
-	print("------------------------------")
-
-	print( f"a1:  %.2f  %.2f\na2:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
-	      (new_variant_params[var_ids[0]][0], new_variant_params[var_ids[0]][1],
-	       new_variant_params[var_ids[1]][0], new_variant_params[var_ids[1]][1],  new_rpe_baseline[case_id]))
-	print()
-
-	age, va = unpack_progression(progression[case_id])
-	plot_sim_results_vs_data(age, va, parameters[var_ids[0]], parameters[var_ids[1]], rpe_baseline[case_id],
-	                         new_variant_params[var_ids[0]], new_variant_params[var_ids[1]], new_rpe_baseline[case_id])
-
-#########################################
 def fit_to_variant_group(group, case_ids, case_variants, progression):
 	rpe_baseline_init = 0.1
 	print(group)
@@ -345,25 +291,25 @@ def fit_to_variant_group(group, case_ids, case_variants, progression):
 			params[var_id] = var_descr[:2]
 			character[var_id] = var_descr[2:5]
 
-	param_descr  = target_function(params, case_ids, case_variants, rpe_baseline, progression)
-
-	ret  = optimization_loop(params, case_ids, case_variants, rpe_baseline, progression, character)
-	[new_variant_params, new_rpe_baseline] = ret
-
-	# visualization
-	for case_id in case_ids:
-		report(params, rpe_baseline, new_variant_params, new_rpe_baseline, case_variants, progression, case_id)
-
-	return new_variant_params
+	return optimization_loop(params, case_ids, case_variants, rpe_baseline, progression, character)
 
 #########################################
-def store(new_variant_params, group_id):
+def store_variant_params(new_variant_params, group_id):
 	db, cursor = abca4_connect()
 	for vid, newprms in new_variant_params.items():
 		[enew, tnew] = newprms
 		store_or_update(cursor, 'parametrization_adjusted', fixed_fields={"variant_id":vid},
-		                update_fields={"expression_folding_membrane_incorporation":enew,
-		                               "transport_efficiency":tnew, "notes": f"group {group_id}"})
+		                update_fields={"expression_folding_membrane_incorporation": enew,
+		                               "transport_efficiency": tnew, "notes": f"group {group_id}"})
+	cursor.close()
+	db.close()
+
+#########################################
+def store_baseline(new_baseline):
+	db, cursor = abca4_connect()
+	for case_id, baseline in new_baseline.items():
+		store_or_update(cursor, 'case_parametrization', fixed_fields={"case_id":case_id},
+		                update_fields={"baseline":baseline})
 	cursor.close()
 	db.close()
 
@@ -377,7 +323,7 @@ def main():
 	case_ids_belonging_to_group = {}
 	for g in range(len(groups)):
 		group = groups[g]
-		if len(group)<5: continue
+		if len(group)<3: continue
 		if g not in case_ids_belonging_to_group: case_ids_belonging_to_group[g] = []
 		for case_id, vars in case_variants.items():
 			if not is_in_group(group, case_id, case_variants): continue
@@ -385,8 +331,9 @@ def main():
 
 	for g, case_ids in case_ids_belonging_to_group.items():
 		group = groups[g]
-		new_variant_params = fit_to_variant_group(group, case_ids, case_variants, progression)
-		store(new_variant_params, g+1)
+		[new_variant_params, new_rpe_baseline]  = fit_to_variant_group(group, case_ids, case_variants, progression)
+		store_variant_params(new_variant_params, g+1)
+		store_baseline(new_rpe_baseline)
 
 
 #########################################

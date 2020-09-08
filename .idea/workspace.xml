@@ -2,9 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3bac899b-291d-4212-9723-444346ec6ed7" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/54_parametrization/23_group_fit_visualization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_abca4_schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/01_abca4_schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/07_load_cases.py" beforeDir="false" afterPath="$PROJECT_DIR$/07_load_cases.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/51_params_from_literature.py" beforeDir="false" afterPath="$PROJECT_DIR$/51_params_from_literature.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/52_initial_parametrization.py" beforeDir="false" afterPath="$PROJECT_DIR$/52_initial_parametrization.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/exp_characterization.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/exp_characterization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/54_parametrization/06_age_distros.py" beforeDir="false" afterPath="$PROJECT_DIR$/54_parametrization/06_age_distros.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/54_parametrization/22_param_fitting_to_variant.py" beforeDir="false" afterPath="$PROJECT_DIR$/54_parametrization/22_param_fitting_to_variant.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -15,23 +20,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="52_initial_parametrization.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/52_initial_parametrization.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="108">
-              <caret line="91" column="22" lean-forward="true" selection-start-line="91" selection-start-column="22" selection-end-line="91" selection-end-column="22" />
-              <folding>
-                <element signature="e#20#45#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="22_param_fitting_to_variant.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/54_parametrization/22_param_fitting_to_variant.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4514">
-              <caret line="379" column="23" selection-start-line="379" selection-start-column="23" selection-end-line="379" selection-end-column="23" />
+            <state relative-caret-position="542">
+              <caret line="332" selection-start-line="332" selection-end-line="332" />
               <folding>
                 <element signature="e#19#30#0" expanded="true" />
               </folding>
@@ -39,14 +32,45 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="51_params_from_literature.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/51_params_from_literature.py">
+      <file leaf-file-name="01_abca4_schema.sql" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/01_abca4_schema.sql">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="606">
-              <caret line="101" column="42" lean-forward="true" selection-start-line="101" selection-start-column="42" selection-end-line="101" selection-end-column="42" />
+            <state relative-caret-position="487">
+              <caret line="108" column="39" lean-forward="true" selection-start-line="108" selection-start-column="39" selection-end-line="108" selection-end-column="39" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="23_group_fit_visualization.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/54_parametrization/23_group_fit_visualization.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="365">
+              <caret line="157" column="14" lean-forward="true" selection-start-line="157" selection-start-column="14" selection-end-line="157" selection-end-column="14" />
               <folding>
-                <element signature="e#20#45#0" expanded="true" />
+                <element signature="e#251#270#0" />
+                <element signature="e#9778#10639#0" />
+                <element signature="e#9846#9853#0" />
+                <element signature="e#10116#10123#0" />
+                <element signature="e#10864#10871#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="simulation.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/simulation.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="51" lean-forward="true" selection-start-line="51" selection-end-line="51" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="06_age_distros.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/54_parametrization/06_age_distros.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="451">
+              <caret line="71" column="14" lean-forward="true" selection-start-line="71" selection-start-column="14" selection-end-line="71" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -99,8 +123,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/utils/mysql.py" />
-        <option value="$PROJECT_DIR$/09_check_open_access.py" />
         <option value="$PROJECT_DIR$/13_structure,py.py" />
         <option value="$PROJECT_DIR$/11_gnomad.py" />
         <option value="$PROJECT_DIR$/20_case_review.py" />
@@ -143,20 +165,22 @@
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_3.py" />
         <option value="$PROJECT_DIR$/utils/annotation.py" />
         <option value="$PROJECT_DIR$/utils/simulation.py" />
-        <option value="$PROJECT_DIR$/utils/utils.py" />
-        <option value="$PROJECT_DIR$/54_parametrization/22_param_fitting_to_variant.py" />
-        <option value="$PROJECT_DIR$/07_load_cases.py" />
-        <option value="$PROJECT_DIR$/01_abca4_schema.sql" />
         <option value="$PROJECT_DIR$/utils/exp_characterization.py" />
         <option value="$PROJECT_DIR$/52_initial_parametrization.py" />
+        <option value="$PROJECT_DIR$/utils/utils.py" />
+        <option value="$PROJECT_DIR$/07_load_cases.py" />
         <option value="$PROJECT_DIR$/51_params_from_literature.py" />
+        <option value="$PROJECT_DIR$/54_parametrization/06_age_distros.py" />
+        <option value="$PROJECT_DIR$/01_abca4_schema.sql" />
+        <option value="$PROJECT_DIR$/54_parametrization/22_param_fitting_to_variant.py" />
+        <option value="$PROJECT_DIR$/54_parametrization/23_group_fit_visualization.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="2094" />
-    <option name="y" value="11" />
-    <option name="width" value="1575" />
+    <option name="x" value="2033" />
+    <option name="y" value="22" />
+    <option name="width" value="1780" />
     <option name="height" value="970" />
   </component>
   <component name="ProjectView">
@@ -199,6 +223,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/54_parametrization" />
       <recent name="$PROJECT_DIR$/54_parametrization_consistency" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/utils" />
@@ -230,7 +255,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="2094" y="11" width="1575" height="970" extended-state="0" />
+    <frame x="2033" y="22" width="1780" height="970" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -241,8 +266,8 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24613403" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.26968974" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21741605" />
+      <window_info anchor="bottom" id="Find" order="1" visible="true" weight="0.26968974" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -284,13 +309,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/09_check_open_access.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
@@ -340,13 +358,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="569">
           <caret line="854" column="8" selection-start-line="854" selection-start-column="8" selection-end-line="854" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/54_parametrization/06_age_distros.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="900">
-          <caret line="65" column="79" lean-forward="true" selection-start-line="65" selection-start-column="79" selection-end-line="65" selection-end-column="79" />
         </state>
       </provider>
     </entry>
@@ -509,40 +520,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils/simulation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1602">
-          <caret line="51" lean-forward="true" selection-start-line="51" selection-end-line="51" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils/annotation.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="20" column="17" selection-start-line="20" selection-end-line="20" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="378">
-          <caret line="110" selection-start-line="110" selection-end-line="110" />
-          <folding>
-            <element signature="e#301#468#0" />
-            <element signature="e#362#452#0" />
-            <element signature="e#542#832#0" />
-            <element signature="e#859#918#0" />
-            <element signature="e#956#1412#0" />
-            <element signature="e#1119#1286#0" />
-            <element signature="e#1302#1398#0" />
-            <element signature="e#1527#1662#0" />
-            <element signature="e#1693#1828#0" />
-            <element signature="e#1860#2249#0" />
-            <element signature="e#2293#2633#0" />
-            <element signature="e#2635#2663#0" />
-            <element signature="e#2774#3366#0" />
-            <element signature="e#3101#3143#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -635,55 +616,106 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/07_load_cases.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="612">
-          <caret line="307" selection-start-line="294" selection-end-line="307" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/raw_data/params_literature.tsv">
       <provider editor-type-id="csv-table-editor">
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
       <provider selected="true" editor-type-id="csv-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/01_abca4_schema.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="80" selection-start-line="80" selection-end-line="80" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils/exp_characterization.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/52_initial_parametrization.py">
+    <entry file="file://$PROJECT_DIR$/utils/utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="91" column="22" lean-forward="true" selection-start-line="91" selection-start-column="22" selection-end-line="91" selection-end-column="22" />
+        <state relative-caret-position="750">
+          <caret line="185" lean-forward="true" selection-start-line="185" selection-end-line="185" />
+          <folding>
+            <element signature="e#301#468#0" />
+            <element signature="e#362#452#0" />
+            <element signature="e#542#832#0" />
+            <element signature="e#859#918#0" />
+            <element signature="e#956#1412#0" />
+            <element signature="e#1119#1286#0" />
+            <element signature="e#1302#1398#0" />
+            <element signature="e#1527#1662#0" />
+            <element signature="e#1693#1828#0" />
+            <element signature="e#1860#2249#0" />
+            <element signature="e#2293#2633#0" />
+            <element signature="e#2635#2663#0" />
+            <element signature="e#2774#3366#0" />
+            <element signature="e#3101#3143#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/07_load_cases.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="7" column="29" selection-start-line="7" selection-start-column="29" selection-end-line="7" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/51_params_from_literature.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-114">
+          <caret line="77" column="50" lean-forward="true" selection-start-line="77" selection-start-column="50" selection-end-line="77" selection-end-column="50" />
           <folding>
             <element signature="e#20#45#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/52_initial_parametrization.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="105" column="67" lean-forward="true" selection-start-line="105" selection-start-column="67" selection-end-line="105" selection-end-column="67" />
+          <folding>
+            <element signature="e#20#45#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/54_parametrization/06_age_distros.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="451">
+          <caret line="71" column="14" lean-forward="true" selection-start-line="71" selection-start-column="14" selection-end-line="71" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/simulation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="51" lean-forward="true" selection-start-line="51" selection-end-line="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/01_abca4_schema.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="487">
+          <caret line="108" column="39" lean-forward="true" selection-start-line="108" selection-start-column="39" selection-end-line="108" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/54_parametrization/22_param_fitting_to_variant.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4514">
-          <caret line="379" column="23" selection-start-line="379" selection-start-column="23" selection-end-line="379" selection-end-column="23" />
+        <state relative-caret-position="542">
+          <caret line="332" selection-start-line="332" selection-end-line="332" />
           <folding>
             <element signature="e#19#30#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/51_params_from_literature.py">
+    <entry file="file://$PROJECT_DIR$/54_parametrization/23_group_fit_visualization.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="606">
-          <caret line="101" column="42" lean-forward="true" selection-start-line="101" selection-start-column="42" selection-end-line="101" selection-end-column="42" />
+        <state relative-caret-position="365">
+          <caret line="157" column="14" lean-forward="true" selection-start-line="157" selection-start-column="14" selection-end-line="157" selection-end-column="14" />
           <folding>
-            <element signature="e#20#45#0" expanded="true" />
+            <element signature="e#251#270#0" />
+            <element signature="e#9778#10639#0" />
+            <element signature="e#9846#9853#0" />
+            <element signature="e#10116#10123#0" />
+            <element signature="e#10864#10871#0" />
           </folding>
         </state>
       </provider>

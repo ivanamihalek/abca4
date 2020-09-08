@@ -26,7 +26,7 @@ def main():
 	db, cursor = abca4_connect()
 	qry  = "select id, allele_id_1, allele_id_2,  onset_age, progression from cases "
 	qry += "where onset_age>0 and (notes is null or notes not like '%caveat%')"
-	ages = {}
+	ages  = {}
 	cases = {}
 	for case in hard_landing_search(cursor, qry):
 		[case_id, allele_id_1, allele_id_2,  onset_age, progression] = case

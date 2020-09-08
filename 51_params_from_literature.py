@@ -6,6 +6,7 @@ from utils.mysql import *
 from sys import argv, stdout
 from utils.annotation import three_letter_code
 from utils.abca4_gene import get_protein
+from utils.utils import panic
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna, generic_protein
 
@@ -108,9 +109,6 @@ def main():
 			update_fields = {'expression_folding_membrane_incorporation':expression,
 			                 'transport_efficiency':transport,
 			                 'publication_id':publication_id}
-			print(fixed_fields)
-			print(update_fields)
-			print()
 
 			store_or_update(cursor, "parametrization_literature", fixed_fields=fixed_fields, update_fields=update_fields)
 

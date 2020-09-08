@@ -108,3 +108,11 @@ CREATE TABLE `parametrization_literature` (
    `publication_id` mediumint(9)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+DROP TABLE IF EXISTS `case_parametrization`;
+CREATE TABLE `case_parametrization` (
+   `id` mediumint(9) NOT NULL AUTO_INCREMENT  PRIMARY KEY ,
+   `case_id`  mediumint(9),
+   `baseline` float
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+

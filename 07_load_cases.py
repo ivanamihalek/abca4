@@ -5,6 +5,7 @@ import os, re, subprocess
 from utils.mysql import *
 from sys import argv, stdout
 from utils.abca4_gene import *
+from utils.utils import panic
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna, generic_protein
 
@@ -235,11 +236,6 @@ def store_variant_w_known_cdna(cursor, cdna_var, protein_var, var_ids, verbose):
 		var_ids.append(hard_landing_search(cursor, "select max(id) from variants")[0][0])
 
 	return True
-
-
-def panic(panic_args):
-	print(panic_args)
-	exit()
 
 
 ###############################################
