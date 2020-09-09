@@ -104,29 +104,35 @@ def visualization(case_id, varids, params, baseline, va_progression, erg_progres
 
 
 #########################################
-def main():
-
-	if len(argv) < 2:
-		print(f"usage: {argv[0]} <case_id>")
-		exit()
-	case_id = argv[1]
-
-	db, cursor = abca4_connect()
+def process_case(cursor, case_id):
 
 	[case_variants, progression, erg] = read_progression(cursor, case_id)
 	if 'error' in case_variants:
 		print(case_variants, progression, erg)
-		exit()
+		return
 	[params, baseline] = read_params(cursor, case_id, case_variants)
 	print("case variants:", case_variants)
 	print("params:", params)
 	print("baseline:", baseline)
 	print("progression:", progression)
 	print("erg:", erg)
-	cursor.close()
-	db.close()
 
 	visualization(case_id, case_variants, params, baseline, progression, erg)
+
+#########################################
+def main():
+	db, cursor = abca4_connect()
+	if len(argv) >= 2:
+		case_ids = [argv[1]]
+	else:
+		# print(f"usage {argv[0]} <case_id>")
+		# exit()
+		qry = "select id from cases where erg_r_rod is not null"
+		case_ids = [r[0] for r in hard_landing_search(cursor, qry)]
+	for case_id in case_ids:
+		process_case(cursor, case_id)
+	cursor.close()
+	db.close()
 
 #########################################
 if __name__ == '__main__':
