@@ -41,7 +41,7 @@ alpha_wt = 0.05
 beta_wt  = 200
 
 max_steps = 1000
-destroyable_fraction = 0.5
+destroyable_fraction = 0.33
 
 def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline = 0.1, verbose=False):
 
@@ -55,8 +55,10 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 		f = exp(-(age/beta)**2)
 		#rpe =2*f/(1+f)
 		rpe = f # doesn't really make much difference - the 2*f/(1+f) is a bit "rounder"
-
+		if verbose:
+			print("age  %2d"%age, "rpe %.2e"%rpe)
 		delivery_rate = [alpha[0]*rpe, alpha[1]*rpe]
+		#delivery_rate = [alpha[0], alpha[1]]
 		fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
 		# there is something wrong wtih this  - somteims it misses spectacularly
 		# it looks in particular in the cases when a throughput of a variant
@@ -64,8 +66,10 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 		# fraction = filling_fractions_for_const_delivery_rates(delivery_rate)
 		throughput = fraction[0]*transport_efficiency[0] + fraction[1]*transport_efficiency[1]
 		beta *= ((1-destroyable_fraction) + destroyable_fraction*throughput)
+		#beta = beta_wt*((1-destroyable_fraction) + destroyable_fraction*throughput)
 
-		if verbose: print("%2d"%age, ["%.2f"%f for f in fraction], "throughput: %.2f"%throughput)
+		if verbose:
+			print("age  %2d"%age, "fraction:", ["%.2f"%f for f in fraction],  "throughput: %.2f"%throughput)
 		x.append(age)
 		y["throughput"].append(throughput)
 		y["fraction_0"].append(fraction[0])
@@ -139,7 +143,7 @@ def sim_core (delivery_rate, plot=False, verbose=False):
 
 	if verbose:
 		print()
-		print(f" %.3f   %.3f "%(delivery_rate[0], delivery_rate[1]))
+		print(f"delivery_rate: %.3f   %.3f "%(delivery_rate[0], delivery_rate[1]))
 		print(f"loop exited after {max_steps}")
 		print("sum delta %.1e  total frac occupied %.3f"%(sum(delta), total_fraction_occupied))
 		f1 = points[-1][0]

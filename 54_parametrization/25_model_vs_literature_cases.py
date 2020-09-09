@@ -15,7 +15,9 @@ def var_allele_mapping(cursor, params):
 	allele2var = {}
 	for vid in params.keys():
 		qry = f"select id from alleles where variant_ids='-{vid}-'"
-		var2allele[vid] = hard_landing_search(cursor, qry)[0][0]
+		ret = error_intolerant_search(cursor, qry)
+		if not ret: continue
+		var2allele[vid] = ret[0][0]
 		allele2var[var2allele[vid]] = vid
 	return var2allele, allele2var
 
@@ -39,12 +41,13 @@ def literature_cases(cursor, variant_ids,this_publication_id):
 	qry += f"and publication_id!={this_publication_id}"
 	for line in hard_landing_search(cursor, qry):
 		[case_id, allele_id_1, allele_id_2, onset_age, progr_string] = line
+		if not progr_string or len(progr_string)==0: continue
 		age, va = unpack_progression(progr_string)
 		if onset_age and onset_age>0:
-			# age = [max(onset_age-1,0)] + age
-			# va  = [1.0] + va
-			age = [onset_age] + age
-			va  = [0.9] + va
+			age = [max(onset_age-1,0)] + age
+			va  = [1.0] + va
+			# age = [onset_age] + age
+			# va  = [0.9] + va
 		alleles[case_id] = [allele_id_1, allele_id_2]
 		progression[case_id] = [age, va]
 
@@ -56,6 +59,7 @@ def plot_sim_results_vs_data(age, va, params1, params2, rpe_baseline):
 
 	# simulate
 	x, y = sim(params1, params2, rpe_baseline, max_age=50)
+	# exit()
 	# plot_
 	# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
 	title = f"a1:  %.2f  %.2f\na2:  %.2f  %.2f" % (params1[0], params1[1], params2[0], params2[1])
@@ -79,7 +83,8 @@ def main():
 
 	# variants in the group
 	qry = "select  variant_id, expression_folding_membrane_incorporation, transport_efficiency "
-	qry += f"from parametrization_adjusted where notes like 'group {group}'"
+	#qry += f"from parametrization_adjusted where notes like 'group {group}'"
+	qry += f"from parametrization_adjusted"
 	params = dict([(ret[0], [ret[1], ret[2]]) for ret in hard_landing_search(cursor, qry)])
 
 	# variant to allele mapping
@@ -89,7 +94,10 @@ def main():
 	# literature cases that have these alleles
 	alleles, progression = literature_cases(cursor, list(var2allele.keys()), this_publication_id)
 	for case_id, [a1, a2] in alleles.items():
-		[v1,v2] = [allele2var[a] for a in [a1, a2]]
+		try:
+			[v1,v2] = [allele2var[a] for a in [a1, a2]]
+		except:
+			continue
 		print(case_id, a1, a2, v1, v2, progression[case_id])
 		print(v1, characterization[v1])
 		print(v2, characterization[v2])

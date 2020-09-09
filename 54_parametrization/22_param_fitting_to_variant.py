@@ -57,12 +57,21 @@ def read_in_values():
 
 	return [case_variants, prog]
 
+def find_vid_w_exp_parametrization():
+	db, cursor = abca4_connect()
+	experimental = [str(r[0]) for r in hard_landing_search(cursor, "select variant_id from  parametrization_literature")]
+	cursor.close()
+	db.close()
+	return experimental
 
 #########################################
 def find_groups(case_variants):
 	groups = []
-	for case_id, vars in case_variants.items():
-		var_ids = set(list(vars.keys()))
+	for case_id, variants in case_variants.items():
+		# I do not want a case to be joind to a group
+		# only through a variant that is nonexpressing - we are not tweaking those
+		var_ids = set([vid for vid in variants.keys() if variants[vid][0]>0.001])
+		if len(var_ids)==0: continue
 		case_belongs_to = []
 		for group in groups:
 			if len(group.intersection(var_ids))>0:
@@ -149,7 +158,8 @@ def cutoff_prob_by_annotation(notes):
 
 	return cutoff_prob
 
-def tweak_variant_params(params, character, vid):
+def tweak_variant_params(params, character, vid, is_experimental):
+	step_size = 0.005 if is_experimental else 0.01
 	[e_prev, t_prev] = params[vid]
 	[cdna, prot, notes] = character[vid]
 	[e,t] = [e_prev, t_prev]
@@ -158,25 +168,25 @@ def tweak_variant_params(params, character, vid):
 	if die < 0.5: #  tune up one of the values
 		# splice mutation does not change transport properties
 		if 'splice' in prot:
-			e = e_prev + 0.01
+			e = e_prev + step_size
 		else:
 			cutoff_prob = cutoff_prob_by_annotation(notes)
 			if random()<cutoff_prob:
-				e = e_prev + 0.01
+				e = e_prev + step_size
 			else:
-				t = t_prev+ 0.01
+				t = t_prev + step_size
 		if e>1.0: e=1.0
 		if t>1.0: t=1.0
 
 	else:  # tune down one of the values
 		if 'splice' in prot:
-			e = e_prev - 0.01
+			e = e_prev - step_size
 		else:
 			cutoff_prob = cutoff_prob_by_annotation(notes)
 			if random()<cutoff_prob:
-				e = e_prev - 0.01
+				e = e_prev - step_size
 			else:
-				t = t_prev - 0.01
+				t = t_prev - step_size
 		if e<0.0: e=0.0
 		if t<0.0: t=0.0
 
@@ -231,7 +241,7 @@ def accept_or_reject_parameter_change(parametrization, case_ids, case_variants, 
 
 
 ##########
-def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, progression, character, verbose=False):
+def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, progression, character,  experimental, verbose=True):
 
 	# variants which we know are null at the start stay null
 	# some variants may become null during simulation, and
@@ -253,12 +263,12 @@ def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, p
 
 		param_descr_prev = target_function(params, case_ids, case_variants, rpe_baseline, progression)
 		dist_prev = param_descr_prev["rmsd"]
-		if verbose: print("\n  %4d before     %.2f"%(pass_number, dist_prev))
 
 		for vid, prms in params.items():
 			if fixed[vid]: continue # we do not change the null variants
+			#if vid in experimental: continue
 			[e_prev, t_prev] = params[vid]
-			tweak_variant_params(params, character, vid)
+			tweak_variant_params(params, character, vid, vid in experimental)
 			prev = [min_dist, min_params, min_rpe_baseline, e_prev, t_prev, None, dist_prev]
 			ret = accept_or_reject_parameter_change([params, rpe_baseline, T], case_ids, case_variants, progression, [vid, None], prev)
 			[min_dist, min_params, min_rpe_baseline, dist_prev] = ret
@@ -270,13 +280,11 @@ def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, p
 			ret = accept_or_reject_parameter_change([params, rpe_baseline, T], case_ids, case_variants, progression, [None, case_id], prev)
 			[min_dist, min_params, min_rpe_baseline, dist_prev] = ret
 
-		if verbose: print("  %4d  after     %.2f"%(pass_number, dist_prev))
-
 	if verbose: print("min dist found:  %7.3f  " % min_dist)
 	return min_params, min_rpe_baseline
 
 #########################################
-def fit_to_variant_group(group, case_ids, case_variants, progression):
+def fit_to_variant_group(group, case_ids, case_variants, progression, experimental):
 	rpe_baseline_init = 0.1
 	print(group)
 
@@ -291,7 +299,7 @@ def fit_to_variant_group(group, case_ids, case_variants, progression):
 			params[var_id] = var_descr[:2]
 			character[var_id] = var_descr[2:5]
 
-	return optimization_loop(params, case_ids, case_variants, rpe_baseline, progression, character)
+	return optimization_loop(params, case_ids, case_variants, rpe_baseline, progression, character, experimental)
 
 #########################################
 def store_variant_params(new_variant_params, group_id):
@@ -319,11 +327,12 @@ def main():
 
 	[case_variants, progression] = read_in_values()
 	groups = find_groups(case_variants)
+	experimental = find_vid_w_exp_parametrization()
 
 	case_ids_belonging_to_group = {}
 	for g in range(len(groups)):
 		group = groups[g]
-		if len(group)<3: continue
+		#if len(group)<5: continue
 		if g not in case_ids_belonging_to_group: case_ids_belonging_to_group[g] = []
 		for case_id, vars in case_variants.items():
 			if not is_in_group(group, case_id, case_variants): continue
@@ -331,7 +340,7 @@ def main():
 
 	for g, case_ids in case_ids_belonging_to_group.items():
 		group = groups[g]
-		[new_variant_params, new_rpe_baseline]  = fit_to_variant_group(group, case_ids, case_variants, progression)
+		[new_variant_params, new_rpe_baseline]  = fit_to_variant_group(group, case_ids, case_variants, progression, experimental)
 		store_variant_params(new_variant_params, g+1)
 		store_baseline(new_rpe_baseline)
 

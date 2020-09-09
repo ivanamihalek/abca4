@@ -95,35 +95,6 @@ def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, var_i
 	print()
 
 
-def plot_sim_results_vs_data(age, va, params1, params2, rpe_baseline, new_params1, new_params2, new_rpe_baseline):
-
-	# simulate
-	x, y = sim(params1, params2, rpe_baseline, max_age=50)
-	# plot_
-	# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
-	title = f"a1:  %.2f  %.2f\na2:  %.2f  %.2f" % (params1[0], params1[1], params2[0], params2[1])
-
-	# simulate
-	new_x, new_y = sim(new_params1, new_params2, new_rpe_baseline, max_age=50)
-	# plot_
-	# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
-	new_title = f"a1:  %.2f  %.2f\na2:  %.2f  %.2f" % (new_params1[0], new_params1[1], new_params2[0], new_params2[1])
-
-	rows = 1
-	cols = 2
-	fig, axs = plt.subplots(rows, cols)
-	axs[0].set_ylim(-0.1,1.1)
-	axs[0].set_title(title)
-	axs[0].plot(x, y["rpe"])
-	axs[0].scatter(age, va, color='red')
-
-	axs[1].set_ylim(-0.1,1.1)
-	axs[1].set_title(new_title)
-	axs[1].plot(new_x, new_y["rpe"])
-	axs[1].scatter(age, va, color='red')
-
-	plt.show()
-	return
 
 
 def multiplot_sim_results_vs_data(axs, index, age, va,  vid1, vid2, new_params1, new_params2, new_rpe_baseline):
@@ -181,7 +152,7 @@ def main():
 
 	for g, varids in groups.items():
 		case_ids = case_ids_belonging_to_group[g]
-		if len(case_ids )<5: continue
+		# if len(case_ids )<5: continue
 		visualization(case_ids, case_variants, progression, params, rpe_baseline, old_params, old_rpe_baseline)
 
 #########################################

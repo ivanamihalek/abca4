@@ -24,6 +24,7 @@ CREATE TABLE `cases` (
   `acuity_type` varchar(50),
   `eye` ENUM ('better', 'average', 'both'),
   `progression` text,
+  `erg_r_rod` text,
   `notes` text,
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
