@@ -41,7 +41,7 @@ alpha_wt = 0.05
 beta_wt  = 200
 
 max_steps = 1000
-destroyable_fraction = 0.33
+destroyable_fraction = 0.5
 
 def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline = 0.1, verbose=False):
 
@@ -49,6 +49,7 @@ def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline 
 	y = {"throughput":[], "fraction_0":[], "fraction_1":[], "rpe":[]}
 	beta = beta_wt
 	alpha = [alpha_wt*alpha_fraction[0], alpha_wt*alpha_fraction[1]]
+
 
 	for age in range(max_age):
 		# we shouldn't divide by 0

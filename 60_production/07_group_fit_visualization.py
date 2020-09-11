@@ -95,8 +95,6 @@ def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, var_i
 	print()
 
 
-
-
 def multiplot_sim_results_vs_data(axs, index, age, va,  vid1, vid2, new_params1, new_params2, new_rpe_baseline):
 
 	# simulate
@@ -114,8 +112,17 @@ def multiplot_sim_results_vs_data(axs, index, age, va,  vid1, vid2, new_params1,
 
 
 def visualization(case_ids, case_variants, progression, params, rpe_baseline, old_params, old_rpe_baseline):
-	rows = 3
-	cols = 3
+
+	if len(case_ids)<3:
+		rows = 1
+		cols = 2
+	elif len(case_ids)<5:
+		rows = 2
+		cols = 2
+	else:
+		rows = 2
+		cols = 4
+
 	fig, axs = plt.subplots(rows, cols)
 
 	index = -1
@@ -152,7 +159,7 @@ def main():
 
 	for g, varids in groups.items():
 		case_ids = case_ids_belonging_to_group[g]
-		# if len(case_ids )<5: continue
+		if len(case_ids )<2: continue
 		visualization(case_ids, case_variants, progression, params, rpe_baseline, old_params, old_rpe_baseline)
 
 #########################################

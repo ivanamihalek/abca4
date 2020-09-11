@@ -82,10 +82,9 @@ def simplified(x):
 	return float("%.1f"%(float(x.split("+/-")[0])/100))
 
 #########################################
-def process_input_tsv(cursor, tsv):
+def process_input_tsv(cursor, tsv, reference):
 
-	[url, pmc, pubmed_id, ref] = ["https://www.biorxiv.org/content/10.1101/2020.08.28.272914v1.full",
-	                              None, None, "Garces2020BioRX"]
+	[url, pmc, pubmed_id, ref] =  reference
 	variants = parse_in(tsv)
 	protein_sequence =  get_protein()
 	wt_values = []
@@ -126,10 +125,22 @@ def process_input_tsv(cursor, tsv):
 #########################################
 def main():
 
-	tsvs = ["raw_data/molday_tm1.tsv", "raw_data/molday_tm2.tsv"]
+	# tsvs = ["raw_data/molday_tm1.tsv", "raw_data/molday_tm2.tsv"]
+	# [url, pmc, pubmed_id, ref] = ["https://www.biorxiv.org/content/10.1101/2020.08.28.272914v1.full",
+	#                               None, None, "Garces2020BioRX"]
+
+	# tsvs = ["raw_data/molday_random.tsv"]
+	# [url, pmc, pubmed_id, ref] = ["https://iovs.arvojournals.org/article.aspx?articleid=2680974",
+	#                               None, None, "Garces2018IOVS"]
+
+	tsvs = ["raw_data/molday_N965S.tsv"]
+	[url, pmc, pubmed_id, ref] = ["https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5886264",
+	                              None, None, "Molday2018HMG"]
+
+
 	db, cursor = abca4_connect()
 	for tsv in tsvs:
-		process_input_tsv(cursor, tsv)
+		process_input_tsv(cursor, tsv, [url, pmc, pubmed_id, ref])
 	cursor.close()
 	db.close()
 

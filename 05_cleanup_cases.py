@@ -37,15 +37,15 @@ def first_nucleoutide_after_acceptor():
 
 # really bad
 # finger counting, hand waving, light perception
-perception_methods = ["finger", "hand", "fc", "hw", "light", "hm"]
+perception_methods = ["finger", "hand", "fc", "hw", "light", "hm", "lp"]
 
 
 def normalize(value_type, acuity):
 	value_type = value_type.lower()
 	for method in perception_methods:
-		if method in value_type: return 0.0
+		if method in value_type.lower(): return 0.0
 
-	if "/" in acuity: # this is decimal
+	if "/" in acuity: # this is 20ft scale
 		[nom,denom] = acuity.split("/")
 		return float(nom)/float(denom)
 
@@ -56,11 +56,12 @@ def normalize(value_type, acuity):
 		except:
 			print (f"logMAR conversion failed for {value_type} {acuity}")
 			exit()
-	else:
+	else: # this should be plain decimal
 		acuity = float(acuity)
 		if acuity<0 or acuity>1.0:
 			print(f"acuity out of range {value_type} {acuity}")
 			exit()
+		return acuity
 	return 0.0
 
 

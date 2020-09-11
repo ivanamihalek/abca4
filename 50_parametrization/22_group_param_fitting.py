@@ -30,12 +30,14 @@ def variant_info(cursor, allele_id):
 	return variants
 
 
-def read_in_values():
+def read_in_cases_w_progression():
 	db, cursor = abca4_connect()
 
 	# fitting on our own cases on purpose 52 is our set of data
+	# take only cases with at least three progression points
 	qry  = "select id, allele_id_1, allele_id_2,  progression from cases "
-	qry += "where (notes is null or notes not like '%caveat%') and publication_id = 52"
+	qry += "where (notes is null or notes not like '%caveat%') "
+	qry += "and progression like '%:%:%:%' and publication_id = 52"
 
 	prog = {}
 	case_variants = {}
@@ -65,22 +67,38 @@ def find_vid_w_exp_parametrization():
 	return experimental
 
 #########################################
-def find_groups(case_variants):
+def find_variant_groups(case_variants):
+
+	# how many cases does a variant belong to?
+	variant_cases = {}
+	for case_id, variants in case_variants.items():
+		for vid in variants.keys():
+			if vid not in variant_cases: variant_cases[vid] = []
+			variant_cases[vid].append(case_id)
+
 	groups = []
 	for case_id, variants in case_variants.items():
+		# if both variants belong to only one case (which should hopefully be one and the same)
+		# we are not interested
+		if sum([len(variant_cases[vid]) for vid in variants.keys()])<3: continue
+
 		# I do not want a case to be joind to a group
 		# only through a variant that is nonexpressing - we are not tweaking those
 		var_ids = set([vid for vid in variants.keys() if variants[vid][0]>0.001])
 		if len(var_ids)==0: continue
+
 		case_belongs_to = []
 		for group in groups:
 			if len(group.intersection(var_ids))>0:
 				case_belongs_to.append(groups.index(group))
-		if len(case_belongs_to)==0:
+
+		if len(case_belongs_to)==0: # create new_group
 			groups.append(var_ids)
-		elif len(case_belongs_to)==1:
+
+		elif len(case_belongs_to)==1: # update existing group
 			groups[case_belongs_to[0]].update(var_ids)
-		elif len(case_belongs_to)==2:
+
+		elif len(case_belongs_to)==2: # join two groups
 			group1 = groups[case_belongs_to[0]]
 			group1.update(var_ids)
 			# add the second group to the first
@@ -88,11 +106,20 @@ def find_groups(case_variants):
 			group1.update(group2)
 			# and remove the second group
 			groups.remove(group2)
+
 		else:
-			print(f"case {case_id} belongs to more than 1 group")
+			print(f"case {case_id} belongs to more than 2 groups")
 			print(var_ids)
 			print(groups)
 			exit()
+
+	for group in groups:
+		print()
+		print("group   ", group)
+		print("cases")
+		for vid in group:
+			print(f"\t {vid}    {variant_cases[vid]}")
+	print()
 	return groups
 
 
@@ -325,14 +352,13 @@ def store_baseline(new_baseline):
 #########################################
 def main():
 
-	[case_variants, progression] = read_in_values()
-	groups = find_groups(case_variants)
+	[case_variants, progression] = read_in_cases_w_progression()
+	groups = find_variant_groups(case_variants)
 	experimental = find_vid_w_exp_parametrization()
 
 	case_ids_belonging_to_group = {}
 	for g in range(len(groups)):
 		group = groups[g]
-		#if len(group)<5: continue
 		if g not in case_ids_belonging_to_group: case_ids_belonging_to_group[g] = []
 		for case_id, vars in case_variants.items():
 			if not is_in_group(group, case_id, case_variants): continue

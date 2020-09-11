@@ -75,7 +75,7 @@ def find_experimentally_characterized_protein(cursor):
 #########################################
 def main():
 
-	cons_data = read_specs("conservation/abca4/vertebrates_only/specs_out.score")
+	cons_data = read_specs("../conservation/abca4/vertebrates_only/specs_out.score")
 
 	db, cursor = abca4_connect()
 	# find column names
