@@ -80,38 +80,48 @@ def read_groups(cursor):
 	return [group_variants, params, old_params]
 
 #########################################
-def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, var_ids, case_id):
+def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, varid, case_id):
 	print("\n========================")
 	print(f"case id {case_id}")
 
-	print( f"{var_ids[0]}:  %.2f  %.2f\n{var_ids[1]}:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
-	       (parameters[var_ids[0]][0], parameters[var_ids[0]][1],
-	        parameters[var_ids[1]][0], parameters[var_ids[1]][1],  rpe_baseline[case_id]))
+	print(f"{varid[0]}:  %.2f  %.2f\n{varid[1]}:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
+	      (parameters[varid[0]][0], parameters[varid[0]][1],
+	       parameters[varid[1]][0], parameters[varid[1]][1], rpe_baseline[case_id]))
 	print("--------------------------")
 
-	print( f"{var_ids[0]}:  %.2f  %.2f\n{var_ids[1]}:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
-	      (new_variant_params[var_ids[0]][0], new_variant_params[var_ids[0]][1],
-	       new_variant_params[var_ids[1]][0], new_variant_params[var_ids[1]][1],  new_rpe_baseline[case_id]))
+	print(f"{varid[0]}:  %.2f  %.2f\n{varid[1]}:  %.2f  %.2f\nrpe_baseline:   %.2f" % \
+	      (new_variant_params[varid[0]][0], new_variant_params[varid[0]][1],
+	       new_variant_params[varid[1]][0], new_variant_params[varid[1]][1], new_rpe_baseline[case_id]))
 	print()
 
 
-def multiplot_sim_results_vs_data(axs, index, age, va,  vid1, vid2, new_params1, new_params2, new_rpe_baseline):
+def multiplot_sim_results(axs, index, progression, params_old, params_new,
+                          rpe_baseline, rpe_baseline_new, varid, case_id):
 
-	# simulate
-	new_x, new_y = sim(new_params1, new_params2, new_rpe_baseline, max_age=50)
+	age_va, va = unpack_progression(progression[case_id])
+
+	# simulate old
+	params1 = params_old[varid[0]]
+	params2 = params_old[varid[1]]
+	x_old, y_old = sim(params1, params2, rpe_baseline[case_id], max_age=50)
+
+	# simulate new
+	params1 = params_new[varid[0]]
+	params2 = params_new[varid[1]]
+	x, y = sim(params1, params2, rpe_baseline_new[case_id], max_age=50)
 	# plot_
 	# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
-	new_title = f"{vid1}:  %.2f  %.2f     {vid2}:  %.2f  %.2f" % (new_params1[0], new_params1[1], new_params2[0], new_params2[1])
+	title = f"{varid[0]}:  %.2f  %.2f\n{varid[1]}:  %.2f  %.2f" % (params1[0], params1[1], params2[0], params2[1])
 
 	axs.flat[index].set_ylim(-0.1,1.1)
-	axs.flat[index].set_title(new_title)
-	axs.flat[index].plot(new_x, new_y["rpe"])
-	axs.flat[index].scatter(age, va, color='red')
+	axs.flat[index].set_title(title)
+	axs.flat[index].plot(x, y["rpe"])
+	axs.flat[index].plot(x_old, y_old["rpe"], linestyle="dashed")
+	axs.flat[index].scatter(age_va, va, color='red')
 
 	return
 
-
-def visualization(case_ids, case_variants, progression, params, rpe_baseline, old_params, old_rpe_baseline):
+def visualization(case_ids, case_variants, progression, params, rpe_baseline_new, params_old, rpe_baseline_old):
 
 	if len(case_ids)<3:
 		rows = 1
@@ -124,15 +134,13 @@ def visualization(case_ids, case_variants, progression, params, rpe_baseline, ol
 		cols = 4
 
 	fig, axs = plt.subplots(rows, cols)
-
 	index = -1
 	for case_id in case_ids:
 		varids = list(case_variants[case_id].keys())
-		report(old_params, old_rpe_baseline, params, rpe_baseline, varids, case_id)
-		age, va = unpack_progression(progression[case_id])
+		report(params_old, rpe_baseline_old, params, rpe_baseline_new, varids, case_id)
 		index += 1
-		multiplot_sim_results_vs_data(axs, index, age, va, varids[0], varids[1], params[varids[0]],
-		                          params[varids[1]], rpe_baseline[case_id])
+		multiplot_sim_results(axs, index, progression, params_old, params, rpe_baseline_old, rpe_baseline_new, varids, case_id)
+
 	plt.show()
 
 
