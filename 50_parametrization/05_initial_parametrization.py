@@ -5,6 +5,7 @@ import os, re, subprocess
 from utils.mysql import *
 from utils.exp_characterization import *
 from utils.utils import  *
+from utils.rule_based_parametrization import rule_based_params
 
 #########################################
 def read_specs(infile):
@@ -93,8 +94,6 @@ def main():
 		named_field = dict(zip(header, fields))
 		protein = named_field["protein"]
 		cdna = named_field["cdna"]
-		pd = named_field["protein_domain"]
-		homozygotes =  named_field["gnomad_homozygotes"]
 		# initial guess: both factors unaffected
 		[expression, transport, notes] = [1.0, 1.0, ""]
 
@@ -104,103 +103,9 @@ def main():
 			[expression, transport, notes] = characterized_cdna_values(cdna)
 		elif protein in caracterized_protein:
 			[expression, transport] = caracterized_protein[protein]
-
-		############################################
-		# expression
-		elif "fs" in protein:
-			if may_escape_NMD(cdna, protein):
-				expression = 0.5
-				notes = "strong expression: escapes NMD"
-			else:
-				expression = 0.0
-				notes = "null: fs"
-		elif is_splice(cdna, protein):
-			expression = 0.0
-			notes = "null: near splice"
-		elif is_ter(cdna, protein):
-			if may_escape_NMD(cdna, protein):
-				expression = 0.5
-				notes = "strong expression: escapes NMD"
-			else:
-				expression = 0.0
-				notes = "null: early stop"
-		elif is_misfolder(cdna, protein):
-			expression = 0.25
-			notes = "severe expression: misfolder"
-			#print(protein, "misfolder ===>", named_field["conserved_in_verts_insects"])
-
-		elif is_distant_splice(cdna, protein):
-			expression = 0.5
-			notes = "strong expression: distant splice"
-		############################################
-		# transport
-		elif is_salt_bridge(protein):
-			if pd in ["NBD1", "NBD2"]:
-				transport = 0.50
-				notes = "strong transport: NBD, saltbridge"
-			elif pd in ["TMD1", "TMD2"]:
-				transport = 0.75 # we don's seem to have a salt bridge here
-				notes = "mild transport: TMD, saltbridge"
-			elif pd in ["ECD1", "ECD2"]:
-				transport = 0.25
-				notes = "severe transport: ECD, saltbridge"
-			else:
-				transport = 0.75 # here neither
-				notes = f"mild transport: {pd}, cons in ortho"
-
-
-		elif is_synonymous(protein):
-			notes = "suspicious: synonymous"
-
-		elif in_nucleotide_neighborhood(protein):
-			transport = 0.5
-			notes = "strong transport: in the nucleotide neighborhood"
-
-		elif named_field["conserved_in_para_verts"]==1:
-			if homozygotes and homozygotes>1:
-				expression = 0.75
-				notes = "mild expression: cons in para but homozygotes exist"
-			else:
-				expression = 0.25
-				notes = "severe expression: cons in para"
-
-		elif named_field["conserved_in_ortho_verts"]==1:
-			if pd in ["NBD1", "NBD2"]:
-				transport = 0.50
-				notes = "strong transport: NBD, cons in ortho"
-			elif pd in ["TMD1", "TMD2"]:
-				transport = 0.25
-				notes = "severe transport: TMD cons in ortho"
-			elif pd in ["ECD1", "ECD2"]:
-				transport = 0.0
-				notes = "no transport: ECD, cons in ortho"
-			elif pd in ["R"]:
-				transport = 0.25
-				notes = "severe transport:  R cons in ortho"
-			else:
-				transport = 0.50
-				notes = f"strong expr and transp: {pd}, cons in ortho"
-
-		elif "ins" in protein or "del" in protein or "dup" in protein:
-			if pd=="linker":
-				expression = 0.5
-				transport = 0.5
-				notes = "strong expr and transp: linker region mod"
-			else:
-				expression = 0.0
-				notes = "null: gross structural mod"
-
-		elif "deep" in protein :
-			notes = "suspicious: putative deep intronic"
-
-		elif is_missense(protein):
-			# for positions that are not completely conserved (not in orthos and not in paras, we took care of that above)
-			# check is the subsitution is seen in the alignment or (in which case it might be tolerated)
-			# or is  novel - that is, no other sequence has it at this position
-			[expression, transport, notes] = annotate_variable_position(cons_data, protein, pd)
 		else:
-			annotated -= 1
-			print(cdna, protein)
+			[expression, transport, notes] = rule_based_params(named_field, cons_data)
+		############################################
 
 		print("\t", expression, transport, notes)
 		store_or_update(cursor, 'parametrization', fixed_fields={"variant_id":named_field["id"]},

@@ -43,10 +43,16 @@ def main():
 		for ai in [allele_id_1, allele_id_2]:
 			variants[ai] = hard_landing_search(cursor, f"select variant_ids from alleles where id={ai}")[0][0].strip("-").split("-")
 			for v in variants[ai]:
-				ret = error_intolerant_search(cursor, f"select * from parametrization_literature where variant_id={v}")
-				if not ret: continue
-				if len(ret)>1: panic([f"multiple parametrizations for varid {v}"])
-				params[v] = ret[0]
+				ret = error_intolerant_search(cursor, f"select * from parametrization_adjusted where variant_id={v}")
+				if False and ret:
+					if len(ret)>1: panic([f"multiple parametrizations for varid {v}"])
+					params[v] = ret[0]
+					continue
+				else:
+					ret = error_intolerant_search(cursor, f"select * from parametrization_literature where variant_id={v}")
+					if not ret: continue
+					if len(ret)>1: panic([f"multiple parametrizations for varid {v}"])
+					params[v] = ret[0]
 
 		if len(params)!=(len(variants[allele_id_1])+len(variants[allele_id_2])): continue
 

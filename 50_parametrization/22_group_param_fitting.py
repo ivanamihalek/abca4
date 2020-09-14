@@ -286,7 +286,7 @@ def optimization_loop(orig_params, case_ids, case_variants, orig_rpe_baseline, p
 	min_params = copy.deepcopy(orig_params)
 	min_rpe_baseline = copy.deepcopy(orig_rpe_baseline)
 
-	for pass_number in range(1,300):
+	for pass_number in range(1,500):
 
 		param_descr_prev = target_function(params, case_ids, case_variants, rpe_baseline, progression)
 		dist_prev = param_descr_prev["rmsd"]

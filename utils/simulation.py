@@ -43,41 +43,53 @@ beta_wt  = 200
 max_steps = 1000
 destroyable_fraction = 0.5
 
-def progression_sim(max_age, alpha_fraction, transport_efficiency, rpe_baseline = 0.1, verbose=False):
+def progression_inner(age, alpha, beta, transport_efficiency, rpe_baseline, x, y, verbose):
+	number_of_populations = len(alpha)
+	# we shouldn't divide by 0
+	f = exp(-(age/beta)**2)
+	# rpe =2*f/(1+f)
+	rpe = f # doesn't really make much difference - the 2*f/(1+f) is a bit "rounder"
+	if verbose:
+		print("age  %2d"%age, "rpe %.2e"%rpe)
+	delivery_rate = [a*rpe for a in alpha]
+	fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
+	throughput = sum([fraction[i]*transport_efficiency[i] for i in range(number_of_populations)])
+	beta *= ((1-destroyable_fraction) + destroyable_fraction*throughput)
 
+	if verbose:
+		print("age  %2d"%age, "fraction:", ["%.2f"%f for f in fraction],  "throughput: %.2f"%throughput)
+	x.append(age)
+	y["throughput"].append(throughput)
+	y["fraction_0"].append(fraction[0])
+	y["fraction_1"].append(fraction[1])
+	# rescale rpe to have some baseline
+	y["rpe"].append(rpe_baseline + (1-rpe_baseline)*rpe)
+	# y["rpe"].append(rpe) # this just does not reporoduce the observed behavior
+
+	return beta
+
+
+def progression_sim(max_age, alpha_fraction, transport_efficiency,
+                    rpe_baseline = 0.1, intervention_age=-1, silenced_alleles=None, verbose=False):
+	number_of_populations = len(alpha_fraction)
+	if number_of_populations!=len(transport_efficiency):
+		print(f"mismatch in the number of efficiency and transport parameters: {alpha_fraction} vs {transport_efficiency}")
+		exit()
 	x = []
 	y = {"throughput":[], "fraction_0":[], "fraction_1":[], "rpe":[]}
-	beta = beta_wt
-	alpha = [alpha_wt*alpha_fraction[0], alpha_wt*alpha_fraction[1]]
+	beta  = beta_wt
 
+	if intervention_age<0: intervention_age=max_age
+	if silenced_alleles is None: silenced_alleles = []
 
-	for age in range(max_age):
-		# we shouldn't divide by 0
-		f = exp(-(age/beta)**2)
-		#rpe =2*f/(1+f)
-		rpe = f # doesn't really make much difference - the 2*f/(1+f) is a bit "rounder"
-		if verbose:
-			print("age  %2d"%age, "rpe %.2e"%rpe)
-		delivery_rate = [alpha[0]*rpe, alpha[1]*rpe]
-		#delivery_rate = [alpha[0], alpha[1]]
-		fraction = sim_core(delivery_rate, plot=False, verbose=verbose)
-		# there is something wrong wtih this  - somteims it misses spectacularly
-		# it looks in particular in the cases when a throughput of a variant
-		# has to be suppresed all the way to zero (unless there is a bug somewhere)
-		# fraction = filling_fractions_for_const_delivery_rates(delivery_rate)
-		throughput = fraction[0]*transport_efficiency[0] + fraction[1]*transport_efficiency[1]
-		beta *= ((1-destroyable_fraction) + destroyable_fraction*throughput)
-		#beta = beta_wt*((1-destroyable_fraction) + destroyable_fraction*throughput)
+	alpha = [alpha_wt*fraction for fraction in alpha_fraction[:2]]
+	for age in range(intervention_age):
+		beta = progression_inner(age, alpha, beta, transport_efficiency, rpe_baseline, x, y, verbose)
 
-		if verbose:
-			print("age  %2d"%age, "fraction:", ["%.2f"%f for f in fraction],  "throughput: %.2f"%throughput)
-		x.append(age)
-		y["throughput"].append(throughput)
-		y["fraction_0"].append(fraction[0])
-		y["fraction_1"].append(fraction[1])
-		# rescale rpe to have some baseline
-		y["rpe"].append(rpe_baseline + (1-rpe_baseline)*rpe)
-		#y["rpe"].append(rpe) # this just does not reporoduse the observed behavior
+	alpha = [alpha_wt*alpha_fraction[i] for i in range(number_of_populations) if i not in silenced_alleles]
+	transport_efficiency =  [transport_efficiency[i] for i in range(number_of_populations) if i not in silenced_alleles]
+	for age in range(intervention_age, max_age):
+		beta = progression_inner(age, alpha, beta, transport_efficiency, rpe_baseline, x, y, verbose)
 
 	return x, y
 
@@ -90,6 +102,20 @@ def sim(var1_param, var2_param, rpe_baseline, max_age):
 	transport_fraction = [var1_param[1], var2_param[1]]
 	x, y  = progression_sim(max_age, expression_fraction, transport_fraction, rpe_baseline=rpe_baseline, verbose=False)
 	return x, y
+
+########################################
+def sim_intervention(var1_param, var2_param,  var3_param, rpe_baseline, max_age,
+                     intervention_age=0, silenced_alleles=None):
+	# the values for one case/patient
+	# alpha is the abilty to fold and incorporate
+	# "fraction" refers to the fraction of the wild-type capability
+	expression_fraction = [var1_param[0], var2_param[0], var3_param[0]]
+	transport_fraction = [var1_param[1], var2_param[1], var3_param[1]]
+	x, y  = progression_sim(max_age, expression_fraction, transport_fraction,
+	                        rpe_baseline=rpe_baseline, intervention_age=intervention_age,
+	                        silenced_alleles=silenced_alleles, verbose=False)
+	return x, y
+
 
 ########################################
 def filling_fractions_for_const_delivery_rates(delivery_rate):

@@ -90,23 +90,6 @@ def in_nucleotide_neighborhood(protein):
 
 	return True
 
-# this is not very reliable:
-# we have a case wiht two "misfolder" alleles that is over 40 at onset
-def is_misfolder(cdna, protein_vars):
-	if not protein_vars: return False
-	if "_" in protein_vars: return False
-	for protein in protein_vars.split(";"):
-		pattern = re.findall('(\D{3})(\d+)(\D{3})', protein.strip().replace("p.",""))
-		if not pattern: return False
-		for match in pattern:
-			aa_from = match[0].upper()
-			pos = match[1]
-			aa_to = match[2].upper()
-			# print(f"{protein}  {aa_from}  {aa_to} ")
-			# print(f"{single_letter_code[aa_from]}{pos}{single_letter_code[aa_to]}")
-			if f"{single_letter_code[aa_from]}{pos}{single_letter_code[aa_to]}" in ["A1357T", "A1794P", "L2027F", "R2077W"]:
-				return True
-	return False
 
 
 def parse_splice(cdna):

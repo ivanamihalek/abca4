@@ -96,8 +96,7 @@ def report(parameters, rpe_baseline, new_variant_params, new_rpe_baseline, varid
 
 
 def multiplot_sim_results(axs, index, progression, params_old, params_new,
-                          rpe_baseline, rpe_baseline_new, varid, case_id):
-
+                          rpe_baseline, rpe_baseline_new, varid, case_id, var_label,  case_id_in_publication):
 	age_va, va = unpack_progression(progression[case_id])
 
 	# simulate old
@@ -111,17 +110,21 @@ def multiplot_sim_results(axs, index, progression, params_old, params_new,
 	x, y = sim(params1, params2, rpe_baseline_new[case_id], max_age=50)
 	# plot_
 	# title = f"a1: {cdna1} {prot1} {e1} {t1} \na2: {cdna2} {prot2} {e2} {t2}"
-	title = f"{varid[0]}:  %.2f  %.2f\n{varid[1]}:  %.2f  %.2f" % (params1[0], params1[1], params2[0], params2[1])
+	format = "%10s:  %.0f%%  %.0f%%\n%10s:  %.0f%%  %.0f%%\ncase id: %s"
+	title = format % (var_label[varid[0]], params1[0]*100, params1[1]*100,
+	                  var_label[varid[1]], params2[0]*100, params2[1]*100,
+	                  case_id_in_publication)
 
 	axs.flat[index].set_ylim(-0.1,1.1)
-	axs.flat[index].set_title(title)
+	axs.flat[index].text(0.35, 0.75, title, transform = axs.flat[index].transAxes)
 	axs.flat[index].plot(x, y["rpe"])
 	axs.flat[index].plot(x_old, y_old["rpe"], linestyle="dashed")
 	axs.flat[index].scatter(age_va, va, color='red')
 
 	return
 
-def visualization(case_ids, case_variants, progression, params, rpe_baseline_new, params_old, rpe_baseline_old):
+def visualization(case_ids, case_variants, progression, params,
+                  rpe_baseline_new, params_old, rpe_baseline_old, var_label, publication_data):
 
 	if len(case_ids)<3:
 		rows = 1
@@ -139,11 +142,32 @@ def visualization(case_ids, case_variants, progression, params, rpe_baseline_new
 		varids = list(case_variants[case_id].keys())
 		report(params_old, rpe_baseline_old, params, rpe_baseline_new, varids, case_id)
 		index += 1
-		multiplot_sim_results(axs, index, progression, params_old, params, rpe_baseline_old, rpe_baseline_new, varids, case_id)
+		case_id_in_publication = publication_data[case_id][0]
+		multiplot_sim_results(axs, index, progression, params_old, params, rpe_baseline_old,
+		                      rpe_baseline_new, varids, case_id, var_label, case_id_in_publication)
 
 	plt.show()
 
+#########################################
+def get_publication_data(cursor, case_ids):
+	pub_data = {}
+	case_id_string = ",".join([str(ci) for ci in case_ids])
+	qry =   "select c.id, c.patient_xref_id, p.reference  from publications p, cases c "
+	qry += f"where c.publication_id=p.id and c.id in ({case_id_string})"
+	for case_id, patient_id, reference in hard_landing_search(cursor,qry):
+		pub_data[case_id] = [patient_id, reference]
+	return pub_data
 
+def get_var_labels(cursor, variant_ids):
+	var_ids_string = ",".join([str(vi) for vi in variant_ids])
+	qry = f"select id, protein, cdna from variants where id in ({var_ids_string})"
+	label = {}
+	for vid, protein, cdna  in hard_landing_search(cursor,qry):
+		if protein=="splice":
+			label[vid] = cdna
+		else:
+			label[vid] = protein
+	return label
 
 #########################################
 def main():
@@ -153,6 +177,10 @@ def main():
 	[case_variants, progression] = read_progression(cursor)
 	[groups, params, old_params] = read_groups(cursor)
 	[rpe_baseline, old_rpe_baseline] = read_baseline(cursor)
+	publication_data = get_publication_data(cursor, list(progression.keys()))
+	variant_ids = set()
+	for vars in case_variants.values(): variant_ids.update(vars.keys())
+	variant_label = get_var_labels(cursor, variant_ids)
 	cursor.close()
 	db.close()
 
@@ -168,7 +196,9 @@ def main():
 	for g, varids in groups.items():
 		case_ids = case_ids_belonging_to_group[g]
 		if len(case_ids )<2: continue
-		visualization(case_ids, case_variants, progression, params, rpe_baseline, old_params, old_rpe_baseline)
+		visualization(case_ids, case_variants, progression, params, rpe_baseline,
+		              old_params, old_rpe_baseline, variant_label, publication_data)
+		print(",".join([str(publication_data[case_id][0]) for case_id in case_ids]))
 
 #########################################
 if __name__ == '__main__':
