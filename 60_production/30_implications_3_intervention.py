@@ -27,8 +27,6 @@ def main():
 	params2 = [0.0, 1.0]
 	rpe_baseline = 0.1
 	x2, y2 = sim(params1, params2, rpe_baseline, max_age=max_age)
-	#variants2 = label_format % (title, params1[0]*100, params1[1]*100, params2[0]*100, params2[1]*100)
-
 
 	title = "loss of transport\nin one allele"
 	params1 = [1.0, 1.0]
@@ -68,7 +66,6 @@ def main():
 	                          max_age=max_age, intervention_age=intervention_age, silenced_alleles=silenced_alleles)
 	color6 = '#e67778' # pale red
 
-
 	# intervention
 	intervention_age = 2
 	params1 = [1.0, 1.0]
@@ -80,7 +77,6 @@ def main():
 	                          max_age=max_age, intervention_age=intervention_age, silenced_alleles=silenced_alleles)
 	color7 = '#d62728'  # default red
 
-
 	fig, axs = plt.subplots()
 	axs.set_ylim(-0.1,1.1)
 	axs.plot(x1, y1_shifted)
@@ -91,7 +87,6 @@ def main():
 	axs.plot(x5, y5["rpe"], color=color5, linestyle='dashed')
 	axs.plot(x6, y6["rpe"], color=color6)
 	axs.plot(x7, y7["rpe"], color=color7)
-
 
 	plt.show()
 	return

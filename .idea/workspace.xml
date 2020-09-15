@@ -2,19 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3bac899b-291d-4212-9723-444346ec6ed7" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/50_parametrization/03_compare_molday_w_rule_based.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/60_production/26_implications_1_limiting_cases.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/60_production/28_implications_2_loss_of_one_allele.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/60_production/30_implications_3_intervention.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/rule_based_parametrization.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/50_parametrization/02_initial_parametrization.py" beforeDir="false" afterPath="$PROJECT_DIR$/50_parametrization/05_initial_parametrization.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/50_parametrization/03_mark_suspicious_cases.py" beforeDir="false" afterPath="$PROJECT_DIR$/50_parametrization/06_mark_suspicious_cases.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/50_parametrization/22_group_param_fitting.py" beforeDir="false" afterPath="$PROJECT_DIR$/50_parametrization/22_group_param_fitting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/60_production/12_cases_with_parametrization.py" beforeDir="false" afterPath="$PROJECT_DIR$/60_production/12_cases_with_parametrization.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/60_production/17_group_fit_visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/60_production/17_group_fit_visualization.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/simulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/60_production/30_implications_3_intervention.py" beforeDir="false" afterPath="$PROJECT_DIR$/60_production/30_implications_3_intervention.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -28,8 +16,8 @@
       <file leaf-file-name="30_implications_3_intervention.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/60_production/30_implications_3_intervention.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="912">
-              <caret line="91" column="41" lean-forward="true" selection-start-line="91" selection-start-column="41" selection-end-line="91" selection-end-column="41" />
+            <state relative-caret-position="486">
+              <caret line="28" column="65" selection-start-line="28" selection-start-column="65" selection-end-line="28" selection-end-column="65" />
             </state>
           </provider>
         </entry>
@@ -612,8 +600,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/60_production/30_implications_3_intervention.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="912">
-          <caret line="91" column="41" lean-forward="true" selection-start-line="91" selection-start-column="41" selection-end-line="91" selection-end-column="41" />
+        <state relative-caret-position="486">
+          <caret line="28" column="65" selection-start-line="28" selection-start-column="65" selection-end-line="28" selection-end-column="65" />
         </state>
       </provider>
     </entry>
