@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3bac899b-291d-4212-9723-444346ec6ed7" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/60_production/30_implications_3_intervention.py" beforeDir="false" afterPath="$PROJECT_DIR$/60_production/30_implications_3_intervention.py" afterDir="false" />
-    </list>
+    <list default="true" id="3bac899b-291d-4212-9723-444346ec6ed7" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -137,8 +135,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="2087" />
-    <option name="y" value="31" />
+    <option name="x" value="2051" />
+    <option name="y" value="22" />
     <option name="width" value="1639" />
     <option name="height" value="1024" />
   </component>
@@ -219,7 +217,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="2087" y="31" width="1639" height="1024" extended-state="0" />
+    <frame x="2051" y="22" width="1639" height="1024" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19183168" />
